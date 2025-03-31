@@ -1,6 +1,8 @@
 package com.adfecomm.adfecomm.service;
 
 import com.adfecomm.adfecomm.model.Category;
+import com.adfecomm.adfecomm.repository.CategoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,35 +15,36 @@ import java.util.Optional;
 @Service
 public class CategoryServiceImpl implements CategoryService {
     private List<Category> categories = new ArrayList<>();
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Override
     public List<Category> getAllCategories() {
-        return categories;
+        return categoryRepository.findAll();
     }
 
     @Override
     public void createCategory(Category category) {
-        categories.add(category);
+        categoryRepository.save(category);
     }
 
     @Override
     public Category updateCategory(Category category, Long categoryId) {
-        Optional<Category> categoryToUpdate = categories.stream()
-            .filter(c -> c.getCategoryId().equals(categoryId))
-            .findFirst();
-        categoryToUpdate.ifPresentOrElse(cat -> {cat
-                .setCategoryName(category.getCategoryName()); }
-                , () -> { throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found."); });
-
-        return categoryToUpdate.get();
+        Category categoryToUpdate = categoryRepository
+                .findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+        categoryToUpdate.setCategoryName(category.getCategoryName());
+        categoryRepository.save(categoryToUpdate);
+        return categoryToUpdate;
     }
 
     @Override
     public String deleteCategory(Long categoryId) {
-        Category category = categories.stream()
-                .filter(c -> c.getCategoryId().equals(categoryId))
-                .findFirst().orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found."));
-        categories.remove(category);
+        Category category = categoryRepository
+                    .findById(categoryId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+
+        categoryRepository.delete(category);
         return "categoryId: " + categoryId + " deleted";
 
     }
