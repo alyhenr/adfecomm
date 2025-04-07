@@ -26,32 +26,20 @@ public class ProductController {
 
     @PostMapping("/public/products")
     public ResponseEntity<String> createProduct(@Valid @RequestBody Product product) {
-        try {
-            productService.createProduct(product);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Product created");
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
-        }
+        productService.createProduct(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Product created");
     }
 
     @DeleteMapping("/admin/products/{productId}")
     public ResponseEntity<String> deleteProduct(@PathVariable Long productId) {
-        try {
-            String status = productService.deleteProduct(productId);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(status);
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
-        }
+        String status = productService.deleteProduct(productId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(status);
     }
 
     @PutMapping("/public/products/{productId}")
     public ResponseEntity<String> updateProduct(@RequestBody Product product
                                                 ,@PathVariable Long productId) {
-        try {
-            productService.updateProduct(product, productId);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Product with id: " + productId + " updated.");
-        } catch (ResponseStatusException e) {
-            return ResponseEntity.status(e.getStatusCode()).body(e.getReason());
-        }
+        productService.updateProduct(product, productId);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Product with id: " + productId + " updated.");
     }
 }

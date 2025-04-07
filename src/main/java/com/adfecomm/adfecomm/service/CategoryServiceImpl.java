@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.service;
 
+import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Category;
 import com.adfecomm.adfecomm.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(Category category, Long categoryId) {
         categoryRepository
             .findById(categoryId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id", ""));
 
         category.setCategoryId(categoryId);
         categoryRepository.save(category);
@@ -40,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
     public String deleteCategory(Long categoryId) {
         Category category = categoryRepository
                             .findById(categoryId)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+                            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id", ""));
 
         categoryRepository.delete(category);
         return "categoryId: " + categoryId + " deleted";

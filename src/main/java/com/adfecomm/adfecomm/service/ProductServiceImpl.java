@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.service;
 
+import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Product;
 import com.adfecomm.adfecomm.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class ProductServiceImpl implements ProductService {
     public Product updateProduct(Product product, Long productId) {
         productRepository
             .findById(productId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+            .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id", ""));
 
         product.setProductId(productId);
         productRepository.save(product);
@@ -40,7 +41,7 @@ public class ProductServiceImpl implements ProductService {
     public String deleteProduct(Long productId) {
         Product product = productRepository
                             .findById(productId)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found"));
+                            .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id", ""));
 
         productRepository.delete(product);
         return "productId: " + productId + " deleted";
