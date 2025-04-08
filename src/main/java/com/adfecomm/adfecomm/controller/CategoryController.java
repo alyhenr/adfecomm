@@ -1,6 +1,8 @@
 package com.adfecomm.adfecomm.controller;
 
 import com.adfecomm.adfecomm.model.Category;
+import com.adfecomm.adfecomm.payload.CategoryDTO;
+import com.adfecomm.adfecomm.payload.CategoryResponse;
 import com.adfecomm.adfecomm.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,14 +23,14 @@ public class CategoryController {
     }
 
     @GetMapping("/public/categories")
-    public ResponseEntity<List<Category>> getAllCategories() {
+    public ResponseEntity<CategoryResponse> getAllCategories() {
         return ResponseEntity.status(HttpStatus.OK).body(categoryService.getAllCategories());
     }
 
     @PostMapping("/public/categories")
-    public ResponseEntity<String> createCategory(@Valid @RequestBody Category category) {
-        categoryService.createCategory(category);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Category created");
+    public ResponseEntity<CategoryDTO> createCategory(@Valid @RequestBody CategoryDTO category) {
+        CategoryDTO newCategory = categoryService.createCategory(category);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }
 
     @DeleteMapping("/admin/categories/{categoryId}")
@@ -38,7 +40,7 @@ public class CategoryController {
     }
 
     @PutMapping("/public/categories/{categoryId}")
-    public ResponseEntity<String> updateCategory(@RequestBody Category category
+    public ResponseEntity<String> updateCategory(@RequestBody CategoryDTO category
                                                 ,@PathVariable Long categoryId) {
         categoryService.updateCategory(category, categoryId);
         return ResponseEntity.status(HttpStatus.CREATED).body("Category with id: " + categoryId + " updated.");
