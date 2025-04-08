@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.service;
 
+import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Category;
 import com.adfecomm.adfecomm.repository.CategoryRepository;
@@ -22,6 +23,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void createCategory(Category category) {
+        category.setCategoryName(category.getCategoryName().trim());
+        Category existingCategory = categoryRepository.findByCategoryName(category.getCategoryName());
+        if (existingCategory != null) {
+            throw new APIException("Category with name: '" + existingCategory.getCategoryName() + "' already exists");
+        }
         categoryRepository.save(category);
     }
 
@@ -29,8 +35,9 @@ public class CategoryServiceImpl implements CategoryService {
     public Category updateCategory(Category category, Long categoryId) {
         categoryRepository
             .findById(categoryId)
-            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id", ""));
+            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id"));
 
+        category.setCategoryName(category.getCategoryName().trim());
         category.setCategoryId(categoryId);
         categoryRepository.save(category);
 
@@ -41,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
     public String deleteCategory(Long categoryId) {
         Category category = categoryRepository
                             .findById(categoryId)
-                            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id", ""));
+                            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id"));
 
         categoryRepository.delete(category);
         return "categoryId: " + categoryId + " deleted";

@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.service;
 
+import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Product;
 import com.adfecomm.adfecomm.repository.ProductRepository;
@@ -22,6 +23,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public void createProduct(Product product) {
+        product.setProductName(product.getProductName().trim());
+        Product existingProduct = productRepository.findByProductName(product.getProductName());
+
+        if (existingProduct != null) {
+            throw new APIException("Product with name: '" + existingProduct.getProductName() + "' already exists.");
+        }
         productRepository.save(product);
     }
 
@@ -29,8 +36,9 @@ public class ProductServiceImpl implements ProductService {
     public Product updateProduct(Product product, Long productId) {
         productRepository
             .findById(productId)
-            .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id", ""));
+            .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
 
+        product.setProductName(product.getProductName().trim());
         product.setProductId(productId);
         productRepository.save(product);
 
@@ -41,7 +49,7 @@ public class ProductServiceImpl implements ProductService {
     public String deleteProduct(Long productId) {
         Product product = productRepository
                             .findById(productId)
-                            .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id", ""));
+                            .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
 
         productRepository.delete(product);
         return "productId: " + productId + " deleted";
