@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.controller;
 
+import com.adfecomm.adfecomm.config.AppConstants;
 import com.adfecomm.adfecomm.payload.CategoryDTO;
 import com.adfecomm.adfecomm.payload.CategoryResponse;
 import com.adfecomm.adfecomm.service.CategoryService;
@@ -19,10 +20,12 @@ public class CategoryController {
 
     @GetMapping("/public/categories")
     public ResponseEntity<CategoryResponse> getAllCategories(
-            @RequestParam(name = "pageNumber") Integer pageNumber,
-            @RequestParam(name = "pageSize") Integer pageSize
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_BY_CATEGORY) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_ORDER) String sortOrder
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getAllCategories(pageNumber, pageSize));
+        return ResponseEntity.status(HttpStatus.OK).body(categoryService.getAllCategories(pageNumber, pageSize, sortBy, sortOrder));
     }
 
     @PostMapping("/public/categories")
