@@ -61,7 +61,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = modelMapper.map(categoryDTO, Category.class);
         categoryRepository
             .findById(categoryId)
-            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id"));
+            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
 
         category.setCategoryId(categoryId);
 
@@ -72,7 +72,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDTO deleteCategory(Long categoryId) {
         Category category = categoryRepository
                             .findById(categoryId)
-                            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "category", "id"));
+                            .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
 
         categoryRepository.delete(category);
         return modelMapper.map(category, CategoryDTO.class);

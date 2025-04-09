@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.exceptions;
 
+import com.adfecomm.adfecomm.payload.APIResponse;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,14 +27,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<String> resourceNotFound(ResourceNotFoundException e) {
+    public ResponseEntity<APIResponse> resourceNotFound(ResourceNotFoundException e) {
         String message = e.getMessage();
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        APIResponse apiResponse = new APIResponse(message, false);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponse);
     }
 
     @ExceptionHandler(APIException.class)
-    public ResponseEntity<String> apiException(APIException e) {
+    public ResponseEntity<APIResponse> apiException(APIException e) {
         String message = e.getMessage();
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(message);
+        APIResponse apiResponse = new APIResponse(message, false);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(apiResponse);
     }
 }
