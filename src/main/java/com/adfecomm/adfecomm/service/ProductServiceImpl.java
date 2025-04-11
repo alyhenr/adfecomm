@@ -27,7 +27,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
-    private ModelMapper mapper;
+    private ModelMapper modelMapper;
     @Autowired
     private CategoryRepository categoryRepository;
 
@@ -40,7 +40,7 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByOrderBy);
         Page<Product> productPage = productRepository.findAll(pageDetails);
         List<ProductDTO> products = productPage.getContent().stream()
-                .map(product -> mapper.map(product, ProductDTO.class))
+                .map(product -> modelMapper.map(product, ProductDTO.class))
                 .toList();
         ProductResponse productResponse = new ProductResponse();
         productResponse.setContent(products);
@@ -65,8 +65,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO createProduct(ProductDTO productDTO) {
         productDTO.setProductName(productDTO.getProductName().trim());
-        Product product = saveProduct(mapper.map(productDTO, Product.class));
-        return mapper.map(product, ProductDTO.class);
+        Product product = saveProduct(modelMapper.map(productDTO, Product.class));
+        return modelMapper.map(product, ProductDTO.class);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class ProductServiceImpl implements ProductService {
         productDTO.setProductName(productDTO.getProductName().trim());
         productDTO.setCategory(category);
 
-        Product product = saveProduct(mapper.map(productDTO, Product.class));
+        Product product = saveProduct(modelMapper.map(productDTO, Product.class));
         productDTO.setProductId(product.getProductId());
 
         return productDTO;
@@ -85,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO updateProduct(ProductDTO productDTO, Long productId) {
         productDTO.setProductName(productDTO.getProductName().trim());
-        Product product = mapper.map(productDTO, Product.class);
+        Product product = modelMapper.map(productDTO, Product.class);
         productRepository
             .findById(productId)
             .orElseThrow(() ->new ResourceNotFoundException(productId, "Product", "id"));
@@ -101,7 +101,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository
                             .findById(productId)
                             .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
-        ProductDTO productDTO = mapper.map(product, ProductDTO.class);
+        ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
         productRepository.delete(product);
         return productDTO;
 
