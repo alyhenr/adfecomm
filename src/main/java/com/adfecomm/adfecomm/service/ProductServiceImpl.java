@@ -8,6 +8,7 @@ import com.adfecomm.adfecomm.payload.CategoryDTO;
 import com.adfecomm.adfecomm.payload.CategoryResponse;
 import com.adfecomm.adfecomm.payload.ProductDTO;
 import com.adfecomm.adfecomm.payload.ProductResponse;
+import com.adfecomm.adfecomm.repository.CategoryRepository;
 import com.adfecomm.adfecomm.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductRepository productRepository;
     @Autowired
     private ModelMapper mapper;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Override
     public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
@@ -50,18 +53,33 @@ public class ProductServiceImpl implements ProductService {
         return  productResponse;
     }
 
-    @Override
-    public ProductDTO createProduct(ProductDTO productDTO) {
-        productDTO.setProductName(productDTO.getProductName().trim());
-        Product product = mapper.map(productDTO, Product.class);
-
+    private Product saveProduct(Product product) {
         Product existingProduct = productRepository.findByProductName(product.getProductName());
 
         if (existingProduct != null) {
             throw new APIException("Product with name: '" + existingProduct.getProductName() + "' already exists.");
         }
-        productRepository.save(product);
+        return productRepository.save(product);
+    }
+
+    @Override
+    public ProductDTO createProduct(ProductDTO productDTO) {
+        productDTO.setProductName(productDTO.getProductName().trim());
+        Product product = saveProduct(mapper.map(productDTO, Product.class));
         return mapper.map(product, ProductDTO.class);
+    }
+
+    @Override
+    public ProductDTO createProduct(ProductDTO productDTO, Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
+        productDTO.setProductName(productDTO.getProductName().trim());
+        productDTO.setCategory(category);
+
+        Product product = saveProduct(mapper.map(productDTO, Product.class));
+        productDTO.setProductId(product.getProductId());
+
+        return productDTO;
     }
 
     @Override
@@ -70,7 +88,7 @@ public class ProductServiceImpl implements ProductService {
         Product product = mapper.map(productDTO, Product.class);
         productRepository
             .findById(productId)
-            .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
+            .orElseThrow(() ->new ResourceNotFoundException(productId, "Product", "id"));
 
         product.setProductId(productId);
         productRepository.save(product);

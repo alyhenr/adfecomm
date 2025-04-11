@@ -47,4 +47,11 @@ public class ProductController {
                                                 ,@PathVariable Long productId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.updateProduct(product, productId));
     }
+
+    @PostMapping("/admin/categories/{categoryId}/product")
+    public ResponseEntity<ProductDTO> createProduct(
+                @Valid @RequestBody ProductDTO productDTO,
+                @PathVariable Long categoryId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productDTO, categoryId));
+    }
 }
