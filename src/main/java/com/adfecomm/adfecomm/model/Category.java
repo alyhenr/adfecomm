@@ -28,8 +28,4 @@ public class Category {
     @OneToMany(mappedBy = "category")
     @JsonIgnore
     private Set<Product> products = new HashSet<>(0);
-
-    public int hashCode() {
-        return Objects.hash(categoryId);
-    }
 }

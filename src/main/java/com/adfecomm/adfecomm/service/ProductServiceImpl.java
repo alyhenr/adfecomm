@@ -2,9 +2,19 @@ package com.adfecomm.adfecomm.service;
 
 import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
+import com.adfecomm.adfecomm.model.Category;
 import com.adfecomm.adfecomm.model.Product;
+import com.adfecomm.adfecomm.payload.CategoryDTO;
+import com.adfecomm.adfecomm.payload.CategoryResponse;
+import com.adfecomm.adfecomm.payload.ProductDTO;
+import com.adfecomm.adfecomm.payload.ProductResponse;
 import com.adfecomm.adfecomm.repository.ProductRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,44 +25,67 @@ import java.util.List;
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private ModelMapper mapper;
 
     @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Sort sortByOrderBy = sortOrder.equalsIgnoreCase("asc")
+                ?  Sort.by(sortBy).ascending()
+                :  Sort.by(sortBy).descending();
+
+        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByOrderBy);
+        Page<Product> productPage = productRepository.findAll(pageDetails);
+        List<ProductDTO> products = productPage.getContent().stream()
+                .map(product -> mapper.map(product, ProductDTO.class))
+                .toList();
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setContent(products);
+        productResponse.setPageNumber(productPage.getNumber());
+        productResponse.setPageSize(productPage.getSize());
+        productResponse.setTotalElements(productPage.getTotalElements());
+        productResponse.setTotalPages(productPage.getTotalPages());
+        productResponse.setLastPage(productPage.isLast());
+
+        return  productResponse;
     }
 
     @Override
-    public void createProduct(Product product) {
-        product.setProductName(product.getProductName().trim());
+    public ProductDTO createProduct(ProductDTO productDTO) {
+        productDTO.setProductName(productDTO.getProductName().trim());
+        Product product = mapper.map(productDTO, Product.class);
+
         Product existingProduct = productRepository.findByProductName(product.getProductName());
 
         if (existingProduct != null) {
             throw new APIException("Product with name: '" + existingProduct.getProductName() + "' already exists.");
         }
         productRepository.save(product);
+        return mapper.map(product, ProductDTO.class);
     }
 
     @Override
-    public Product updateProduct(Product product, Long productId) {
+    public ProductDTO updateProduct(ProductDTO productDTO, Long productId) {
+        productDTO.setProductName(productDTO.getProductName().trim());
+        Product product = mapper.map(productDTO, Product.class);
         productRepository
             .findById(productId)
             .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
 
-        product.setProductName(product.getProductName().trim());
         product.setProductId(productId);
         productRepository.save(product);
 
-        return product;
+        return productDTO;
     }
 
     @Override
-    public String deleteProduct(Long productId) {
+    public ProductDTO deleteProduct(Long productId) {
         Product product = productRepository
                             .findById(productId)
                             .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
-
+        ProductDTO productDTO = mapper.map(product, ProductDTO.class);
         productRepository.delete(product);
-        return "productId: " + productId + " deleted";
+        return productDTO;
 
     }
 }

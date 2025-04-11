@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class Product {
 
     @NotNull
     @Positive
-    private Number price;
+    private double price;
 
     @NotNull
     @PositiveOrZero
@@ -33,11 +34,11 @@ public class Product {
 
     private String imageUrl;
 
+    @PositiveOrZero
+    private Integer discount;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
+//    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Category category;
-
-    public int hashCode() {
-        return Objects.hash(productId);
-    }
 }

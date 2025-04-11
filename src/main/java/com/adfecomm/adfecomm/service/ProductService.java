@@ -1,13 +1,15 @@
 package com.adfecomm.adfecomm.service;
 
 import com.adfecomm.adfecomm.model.Product;
+import com.adfecomm.adfecomm.payload.ProductDTO;
+import com.adfecomm.adfecomm.payload.ProductResponse;
 
 import java.util.List;
 
 public interface ProductService {
 
-    List<Product> getAllProducts();
-    void createProduct(Product product);
-    Product updateProduct(Product product, Long productId);
-    String deleteProduct(Long productId);
+    ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
+    ProductDTO createProduct(ProductDTO product);
+    ProductDTO updateProduct(ProductDTO product, Long productId);
+    ProductDTO deleteProduct(Long productId);
 }

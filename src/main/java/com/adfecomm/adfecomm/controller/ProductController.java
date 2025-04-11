@@ -1,6 +1,9 @@
 package com.adfecomm.adfecomm.controller;
 
+import com.adfecomm.adfecomm.config.AppConstants;
 import com.adfecomm.adfecomm.model.Product;
+import com.adfecomm.adfecomm.payload.ProductDTO;
+import com.adfecomm.adfecomm.payload.ProductResponse;
 import com.adfecomm.adfecomm.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,26 +23,28 @@ public class ProductController {
     }
 
     @GetMapping("/public/products")
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts());
+    public ResponseEntity<ProductResponse> getAllProducts(
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_BY_PRODUCT) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_ORDER) String sortOrder
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts(pageNumber, pageSize, sortBy, sortOrder));
     }
 
     @PostMapping("/public/products")
-    public ResponseEntity<String> createProduct(@Valid @RequestBody Product product) {
-        productService.createProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Product created");
+    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productDTO));
     }
 
     @DeleteMapping("/admin/products/{productId}")
-    public ResponseEntity<String> deleteProduct(@PathVariable Long productId) {
-        String status = productService.deleteProduct(productId);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(status);
+    public ResponseEntity<ProductDTO> deleteProduct(@PathVariable Long productId) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(productService.deleteProduct(productId));
     }
 
     @PutMapping("/public/products/{productId}")
-    public ResponseEntity<String> updateProduct(@RequestBody Product product
+    public ResponseEntity<ProductDTO> updateProduct(@RequestBody ProductDTO product
                                                 ,@PathVariable Long productId) {
-        productService.updateProduct(product, productId);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Product with id: " + productId + " updated.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.updateProduct(product, productId));
     }
 }
