@@ -32,6 +32,25 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts(pageNumber, pageSize, sortBy, sortOrder));
     }
 
+    @GetMapping("/public/categories/{categoryId}/products")
+    public ResponseEntity<ProductResponse> getAllProducts(
+            @PathVariable Long categoryId,
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_BY_PRODUCT) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_ORDER) String sortOrder
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getProductsByCategory(categoryId, pageNumber, pageSize, sortBy, sortOrder));
+    }
+
+    @GetMapping("/public/products/keyword/{keyword}")
+    public ResponseEntity<ProductResponse> getProductsByKeyword(
+            @PathVariable String keyword
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getProductsByKeyword(keyword));
+    }
+
+
     @PostMapping("/public/products")
     public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productDTO));

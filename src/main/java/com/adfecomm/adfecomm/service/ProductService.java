@@ -9,6 +9,8 @@ import java.util.List;
 public interface ProductService {
 
     ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
+    ProductResponse getProductsByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder);
+    ProductResponse getProductsByKeyword(String keyword);
     ProductDTO createProduct(ProductDTO productDTO);
     ProductDTO createProduct(ProductDTO productDTO, Long categoryId);
     ProductDTO updateProduct(ProductDTO product, Long productId);

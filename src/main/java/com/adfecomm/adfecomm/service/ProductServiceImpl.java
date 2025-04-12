@@ -20,7 +20,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -31,14 +33,15 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    @Override
-    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    private Pageable createPage(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Sort sortByOrderBy = sortOrder.equalsIgnoreCase("asc")
                 ?  Sort.by(sortBy).ascending()
                 :  Sort.by(sortBy).descending();
 
-        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByOrderBy);
-        Page<Product> productPage = productRepository.findAll(pageDetails);
+        return PageRequest.of(pageNumber, pageSize, sortByOrderBy);
+    }
+
+    private ProductResponse createProductResponse(Page<Product> productPage) {
         List<ProductDTO> products = productPage.getContent().stream()
                 .map(product -> modelMapper.map(product, ProductDTO.class))
                 .toList();
@@ -50,7 +53,33 @@ public class ProductServiceImpl implements ProductService {
         productResponse.setTotalPages(productPage.getTotalPages());
         productResponse.setLastPage(productPage.isLast());
 
-        return  productResponse;
+        return productResponse;
+    }
+
+    @Override
+    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable pageDetails = createPage(pageNumber, pageSize, sortBy, sortOrder);
+        Page<Product> productPage = productRepository.findAll(pageDetails);
+        return  createProductResponse(productPage);
+    }
+
+    public ProductResponse getProductsByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable pageDetails = createPage(pageNumber, pageSize, sortBy, sortOrder);
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
+        List<Product> products = productRepository.findByCategory(category);
+//        Page<Product> productPage = new Page
+        return  null;
+    }
+
+    @Override
+    public ProductResponse getProductsByKeyword(String keyword) {
+        ProductResponse productResponse = new ProductResponse();
+        productResponse.setContent(productRepository.findByProductNameLikeIgnoreCase('%' + keyword + '%')
+                .stream()
+                .map(product -> modelMapper.map(product, ProductDTO.class))
+                .toList());
+        return productResponse;
     }
 
     private Product saveProduct(Product product) {
@@ -59,12 +88,17 @@ public class ProductServiceImpl implements ProductService {
         if (existingProduct != null) {
             throw new APIException("Product with name: '" + existingProduct.getProductName() + "' already exists.");
         }
+
         return productRepository.save(product);
     }
 
     @Override
     public ProductDTO createProduct(ProductDTO productDTO) {
         productDTO.setProductName(productDTO.getProductName().trim());
+        Long categoryId = productDTO.getCategory().getCategoryId();
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
+        productDTO.setCategory(category);
         Product product = saveProduct(modelMapper.map(productDTO, Product.class));
         return modelMapper.map(product, ProductDTO.class);
     }
