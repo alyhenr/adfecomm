@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -52,25 +53,40 @@ public class ProductController {
 
 
     @PostMapping("/admin/products")
-    public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ProductDTO> createProduct(
+            @Valid @RequestBody ProductDTO productDTO
+    ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productDTO));
-    }
-
-    @DeleteMapping("/admin/products/{productId}")
-    public ResponseEntity<ProductDTO> deleteProduct(@PathVariable Long productId) {
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(productService.deleteProduct(productId));
-    }
-
-    @PutMapping("/admin/products/{productId}")
-    public ResponseEntity<ProductDTO> updateProduct(@RequestBody ProductDTO product
-                                                   ,@PathVariable Long productId) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.updateProduct(product, productId));
     }
 
     @PostMapping("/admin/categories/{categoryId}/product")
     public ResponseEntity<ProductDTO> createProduct(
-                @Valid @RequestBody ProductDTO productDTO,
-                @PathVariable Long categoryId) {
+            @Valid @RequestBody ProductDTO productDTO,
+            @PathVariable Long categoryId
+    ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(productDTO, categoryId));
+    }
+
+    @PutMapping("/admin/products/{productId}")
+    public ResponseEntity<ProductDTO> updateProduct(
+            @RequestBody ProductDTO product,
+            @PathVariable Long productId
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.updateProduct(product, productId));
+    }
+
+    @PutMapping("/admin/products/{productId}/image")
+    public ResponseEntity<ProductDTO> updateProductImage(
+            @PathVariable Long productId,
+            @RequestParam("image")MultipartFile image
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.updateProductImage(productId, image));
+    }
+
+    @DeleteMapping("/admin/products/{productId}")
+    public ResponseEntity<ProductDTO> deleteProduct(
+            @PathVariable Long productId
+    ) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(productService.deleteProduct(productId));
     }
 }

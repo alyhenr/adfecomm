@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Iterator;
@@ -32,6 +33,8 @@ public class ProductServiceImpl implements ProductService {
     private ModelMapper modelMapper;
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private FileServiceImpl fileService;
 
     private Pageable createPage(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Sort sortByOrderBy = sortOrder.equalsIgnoreCase("asc")
@@ -119,15 +122,39 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO updateProduct(ProductDTO productDTO, Long productId) {
         productDTO.setProductName(productDTO.getProductName().trim());
+        Category category = productDTO.getCategory();
+        if (category != null) {
+            Long categoryId = category.getCategoryId();
+            category = categoryRepository.findById(productDTO.getCategory().getCategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
+            productDTO.setProductName(productDTO.getProductName().trim());
+            productDTO.setCategory(category);
+        }
+
         Product product = modelMapper.map(productDTO, Product.class);
         productRepository
             .findById(productId)
             .orElseThrow(() ->new ResourceNotFoundException(productId, "Product", "id"));
 
         product.setProductId(productId);
-        productRepository.save(product);
-
+        saveProduct(product);
+        productDTO.setProductId(productId);
         return productDTO;
+    }
+
+    @Override
+    public ProductDTO updateProductImage(Long productId, MultipartFile image) {
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
+
+        try {
+            String url = fileService.uploadImage("", image);
+            product.setImageUrl(url);
+            return modelMapper.map(saveProduct(product), ProductDTO.class);
+        } catch (Exception e) {
+            throw new APIException("Fail to update image of product with id: " + productId + " - Error: " + e.getMessage());
+        }
     }
 
     @Override
