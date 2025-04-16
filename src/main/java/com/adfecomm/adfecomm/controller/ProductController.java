@@ -46,9 +46,13 @@ public class ProductController {
 
     @GetMapping("/public/products/keyword/{keyword}")
     public ResponseEntity<ProductResponse> getProductsByKeyword(
-            @PathVariable String keyword
+            @PathVariable String keyword,
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_BY_PRODUCT) String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = AppConstants.SORT_ORDER) String sortOrder
     ) {
-        return ResponseEntity.status(HttpStatus.OK).body(productService.getProductsByKeyword(keyword));
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getProductsByKeyword(keyword, pageNumber, pageSize, sortBy, sortOrder));
     }
 
 

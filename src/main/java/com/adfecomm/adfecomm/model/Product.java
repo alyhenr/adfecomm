@@ -22,6 +22,7 @@ public class Product {
     @Size(min = 5, message = "Product name must have at least 5 characters")
     private String productName;
 
+    @Size(min = 10, message = "Product name must have at least 10 characters")
     private String description;
 
     @NotNull

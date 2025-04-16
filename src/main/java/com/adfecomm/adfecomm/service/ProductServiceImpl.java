@@ -70,26 +70,22 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageDetails = createPage(pageNumber, pageSize, sortBy, sortOrder);
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
-        List<Product> products = productRepository.findByCategory(category);
-//        Page<Product> productPage = new Page
-        return  null;
+        Page<Product> productPage = productRepository.findByCategory(category, pageDetails);
+        return  createProductResponse(productPage);
     }
 
     @Override
-    public ProductResponse getProductsByKeyword(String keyword) {
-        ProductResponse productResponse = new ProductResponse();
-        productResponse.setContent(productRepository.findByProductNameLikeIgnoreCase('%' + keyword + '%')
-                .stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
-                .toList());
-        return productResponse;
+    public ProductResponse getProductsByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable pageDetails = createPage(pageNumber, pageSize, sortBy, sortOrder);
+        Page<Product> productPage = productRepository.findByProductNameLikeIgnoreCase("%" + keyword + "%", pageDetails);
+        return createProductResponse(productPage);
     }
 
     private Product saveProduct(Product product) {
         Product existingProduct = productRepository.findByProductName(product.getProductName());
 
-        if (existingProduct != null) {
-            throw new APIException("Product with name: '" + existingProduct.getProductName() + "' already exists.");
+        if (existingProduct != null && existingProduct.getCategory().equals(product.getCategory())) {
+            throw new APIException("Product with name: '" + existingProduct.getProductName() + "' already exists in this category: " + product.getCategory().getCategoryName());
         }
 
         return productRepository.save(product);
@@ -125,10 +121,9 @@ public class ProductServiceImpl implements ProductService {
         Category category = productDTO.getCategory();
         if (category != null) {
             Long categoryId = category.getCategoryId();
-            category = categoryRepository.findById(productDTO.getCategory().getCategoryId())
+            Category foundCategory = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
-            productDTO.setProductName(productDTO.getProductName().trim());
-            productDTO.setCategory(category);
+            productDTO.setCategory(foundCategory);
         }
 
         Product product = modelMapper.map(productDTO, Product.class);

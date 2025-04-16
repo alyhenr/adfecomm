@@ -8,9 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Data
@@ -27,5 +25,5 @@ public class Category {
 
     @OneToMany(mappedBy = "category")
     @JsonIgnore
-    private Set<Product> products = new HashSet<>(0);
+    private List<Product> products = new ArrayList<Product>(0);
 }
