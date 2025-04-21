@@ -47,6 +47,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(authorizeRequests ->
                 authorizeRequests.requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/sign-in").permitAll()
+                        .requestMatchers("/api/public").permitAll()
                         .anyRequest().authenticated());
         http.sessionManagement(
                 session ->

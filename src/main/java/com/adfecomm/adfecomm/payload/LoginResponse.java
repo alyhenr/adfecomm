@@ -11,6 +11,6 @@ import java.util.List;
 @AllArgsConstructor
 public class LoginResponse {
     private String username;
-    private String password;
+    private String jwtToken;
     private List<String> roles;
 }
