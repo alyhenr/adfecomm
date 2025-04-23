@@ -19,26 +19,26 @@ import java.util.Set;
         @UniqueConstraint(columnNames = "username"),
         @UniqueConstraint(columnNames = "email"),
 })
-public class AppUser {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
 
     @Email
+//    @NotBlank
     private String email;
 
     @NotBlank
     @Size(max = 50)
     private String username;
 
-    @NotBlank
     private String cellPhone;
 
     @NotBlank
     private String password;
 
     @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER,
-            mappedBy = "appUser")
+            mappedBy = "user")
     private Set<Address> address = new HashSet<>();
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)

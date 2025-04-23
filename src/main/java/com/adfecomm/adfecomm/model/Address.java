@@ -27,22 +27,26 @@ public class Address {
     @NotBlank
     private Integer number;
 
+    @Size(min = 10, message = "Minimo de 10 caracteres")
     private String reference;
+
+    @Size(min = 3, message = "Minimo de 3 caracteres")
+    private String buildingName;
 
     @NotBlank
     private String streetName;
 
     @NotBlank
     @Setter(AccessLevel.PRIVATE)
-    private String county = "Brasil"; //Default, only country accepted for now
+    private String country = "Brasil"; //Default, only country accepted for now
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonIgnore
-    private AppUser appUser;
+    private User user;
 
     @Override
     public String toString() {
-        return streetName + ", " + number + ", " + reference + ", " + city + ", " + state + ", " + county;
+        return streetName + ", " + number + ", " + reference + ", " + city + ", " + state + ", " + country;
     }
 }

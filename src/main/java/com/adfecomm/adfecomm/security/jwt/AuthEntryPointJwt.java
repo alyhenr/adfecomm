@@ -1,4 +1,4 @@
-package com.adfecomm.adfecomm.jwt;
+package com.adfecomm.adfecomm.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;

@@ -1,4 +1,4 @@
-package com.adfecomm.adfecomm.payload;
+package com.adfecomm.adfecomm.security.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

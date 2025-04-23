@@ -26,5 +26,5 @@ public class Role {
             , joinColumns = @JoinColumn(name = "role_id")
             , inverseJoinColumns = @JoinColumn(name = "user_id"))
     @JsonIgnore
-    private Set<AppUser> user = new HashSet<>();
+    private Set<User> user = new HashSet<>();
 }

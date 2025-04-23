@@ -1,8 +1,9 @@
 package com.adfecomm.adfecomm.controller;
 
-import com.adfecomm.adfecomm.jwt.JwtUtils;
-import com.adfecomm.adfecomm.payload.LoginRequest;
-import com.adfecomm.adfecomm.payload.LoginResponse;
+import com.adfecomm.adfecomm.security.jwt.JwtUtils;
+import com.adfecomm.adfecomm.security.dto.LoginRequest;
+import com.adfecomm.adfecomm.security.dto.LoginResponse;
+import com.adfecomm.adfecomm.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,13 +25,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-public class LoginController {
+public class AuthController {
     @Autowired
     AuthenticationManager authenticationManager;
     @Autowired
     JwtUtils jwtUtils;
 
-    @PostMapping("/sign-in")
+    @PostMapping("/api/auth/sign-in")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
         Authentication authentication;
         try {
@@ -45,7 +47,7 @@ public class LoginController {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 

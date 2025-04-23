@@ -1,4 +1,4 @@
-package com.adfecomm.adfecomm.jwt;
+package com.adfecomm.adfecomm.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

@@ -1,4 +1,4 @@
-package com.adfecomm.adfecomm.jwt;
+package com.adfecomm.adfecomm.security.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
