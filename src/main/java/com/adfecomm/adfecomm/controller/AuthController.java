@@ -27,10 +27,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,22 +46,24 @@ public class AuthController {
     @Autowired
     PasswordEncoder encoder;
 
-    private LoginResponse generateJwtHeaders(Authentication authentication, UserDetailsImpl userDetails) {
-        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
-
-        List<String> roles = userDetails.getAuthorities().stream()
+    private List<String> getUserRoles(UserDetailsImpl userDetails) {
+        return userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-
-        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), jwtToken, roles);
     }
 
-    private LoginResponse generateJwtCookies(UserDetailsImpl userDetails) {
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+    /*
+    If this authentication method is used then add jwtToken to LoginResponse properties
+     */
+    private LoginResponse generateLoginResponseJwtHeaders(Authentication authentication, UserDetailsImpl userDetails) {
+        String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 
-        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), roles);
+//        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), jwtToken, getUserRoles(userDetails));
+        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), getUserRoles(userDetails));
+    }
+
+    private LoginResponse generateLoginResponseJwtCookies(UserDetailsImpl userDetails) {
+        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), getUserRoles(userDetails));
     }
 
     @PostMapping("/sign-in")
@@ -88,7 +87,7 @@ public class AuthController {
         switch (AppConstants.AUTH_TYPE) {
             case "COOKIES":
                 ResponseCookie jwtTokenCookie = jwtUtils.generateJwtCookie(userDetails);
-                LoginResponse response = generateJwtCookies(userDetails);
+                LoginResponse response = generateLoginResponseJwtCookies(userDetails);
                 return ResponseEntity.ok()
                         .header(HttpHeaders.SET_COOKIE, jwtTokenCookie.toString())
                         .body(response);
@@ -114,28 +113,27 @@ public class AuthController {
         return ResponseEntity.ok(new APIResponse("User registered successfully", true));
     }
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> registerUser2(@Valid @RequestBody SignUpRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new APIException("Error: Username is already taken!"));
+    @GetMapping("/user")
+    public ResponseEntity<?> getCurrentUsername(Authentication authentication) {
+        if (authentication != null) {
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            return ResponseEntity.ok(
+                    new LoginResponse(userDetails.getId()
+                            , userDetails.getUsername()
+                            , getUserRoles(userDetails)));
         }
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(new APIResponse("Not logged in", false));
+    }
 
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new APIException("Error: Email is already in use!"));
-        }
+    @PostMapping("/sign-out")
+    public ResponseEntity<?> signOutUser() {
+        ResponseCookie cookie = jwtUtils.generateCleanCookie();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new APIResponse("You've been signed out", true));
 
-        // Create new user's account
-        User user = new User( signUpRequest.getEmail(),
-                signUpRequest.getUsername(),
-                encoder.encode(signUpRequest.getPassword()));
-
-        user.setRoles(Set.of(roleRepository
-                .findByRoleName(AppRole.ROLE_USER)
-                .orElseGet(() -> new Role(AppRole.ROLE_USER))));
-
-        userRepository.save(user);
-
-        return ResponseEntity.ok(new APIResponse("User registered successfully!", true));
     }
 
 }

@@ -12,12 +12,5 @@ import java.util.List;
 public class LoginResponse {
     private Long userId;
     private String username;
-    private String jwtToken;
     private List<String> roles;
-
-    public LoginResponse(Long userId, String username, List<String> roles) {
-        this.userId = userId;
-        this.username = username;
-        this.roles = roles;
-    }
 }
