@@ -2,7 +2,7 @@ package com.adfecomm.adfecomm.security.service;
 
 import com.adfecomm.adfecomm.model.User;
 import com.adfecomm.adfecomm.repository.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

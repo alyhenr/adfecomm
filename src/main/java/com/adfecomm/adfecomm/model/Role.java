@@ -1,30 +1,30 @@
 package com.adfecomm.adfecomm.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.HashSet;
-import java.util.Set;
+import lombok.ToString;
 
 @Entity
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Data
+@Table(name = "roles")
 public class Role {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long roleId;
+    @Column(name = "role_id")
+    private Integer roleId;
 
+    @ToString.Exclude
     @Enumerated(EnumType.STRING)
+    @Column(length = 20, name = "role_name")
     private AppRole roleName;
 
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
-    @JoinTable(name = "user_role"
-            , joinColumns = @JoinColumn(name = "role_id")
-            , inverseJoinColumns = @JoinColumn(name = "user_id"))
-    @JsonIgnore
-    private Set<User> user = new HashSet<>();
+    public Role(AppRole roleName) {
+        this.roleName = roleName;
+    }
 }
+

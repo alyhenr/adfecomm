@@ -7,4 +7,6 @@ public class AppConstants {
 
     public  static final String SORT_BY_CATEGORY = "categoryId";
     public  static final String SORT_BY_PRODUCT = "productId";
+
+    public static final String AUTH_TYPE = "COOKIES";
 }
