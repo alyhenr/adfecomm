@@ -33,6 +33,11 @@ public class CartServiceImpl implements CartService {
     @Autowired
     AuthUtil authUtil;
 
+    @Override
+    public List<CartDTO> getAllCarts() {
+        return null;
+    }
+
     /*
         1. Find product, if not exists throws APIException
         2. Check if asked quantity is valid
@@ -65,7 +70,7 @@ public class CartServiceImpl implements CartService {
         cart.setTotalPrice(cart.getTotalPrice() + (productDTO.getPrice() * (1 - productDTO.getDiscount()/100)) * quantity);
 
         CartDTO cartDTO = modelMapper.map(cartRepository.save(cart), CartDTO.class);
-        cartDTO.setCartItemsDTO(cart.getCartItems()
+        cartDTO.setCartItems(cart.getCartItems()
                 .stream()
                 .map(c -> new CartItemDTO(c.getCartItemId()
                         , c.getCart().getCartId()
