@@ -71,7 +71,7 @@ public class AuthController {
         Authentication authentication;
         try {
             authentication = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername()
+                    .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail()
                             , loginRequest.getPassword()));
         } catch (AuthenticationException exception) {
             Map<String, Object> map = new HashMap<>();
@@ -86,7 +86,7 @@ public class AuthController {
 
         switch (AppConstants.AUTH_TYPE) {
             case "COOKIES":
-                ResponseCookie jwtTokenCookie = jwtUtils.generateJwtCookie(userDetails);
+                ResponseCookie jwtTokenCookie = jwtUtils.generateJwtCookie(userDetails); //From email currently
                 LoginResponse response = generateLoginResponseJwtCookies(userDetails);
                 return ResponseEntity.ok()
                         .header(HttpHeaders.SET_COOKIE, jwtTokenCookie.toString())
@@ -98,6 +98,10 @@ public class AuthController {
 
     @PostMapping("/sign-up")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignUpRequest signUpRequest) {
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity.badRequest().body(new APIResponse("Email already in use", false));
+        }
+
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new APIResponse("Email already in use", false));
         }

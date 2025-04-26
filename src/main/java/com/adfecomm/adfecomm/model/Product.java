@@ -36,7 +36,7 @@ public class Product {
     private String imageUrl;
 
     @PositiveOrZero
-    private Integer discount;
+    private Double discount;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)

@@ -27,4 +27,9 @@ public class Cart {
     private List<CartItem> cartItems = new ArrayList<>();
 
     private Double totalPrice = 0.0;
+
+    public Cart(User user, Double totalPrice) {
+        this.user = user;
+        this.totalPrice = totalPrice;
+    }
 }

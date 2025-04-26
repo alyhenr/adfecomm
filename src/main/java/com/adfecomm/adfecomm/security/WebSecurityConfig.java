@@ -127,7 +127,7 @@ public class WebSecurityConfig {
             }
 
             if (!userRepository.existsByEmail("admin@example.com")) {
-                User admin = new User("admin@example.com", "admin", passwordEncoder.encode("adminPass"));
+                    User admin = new User("admin@example.com", "admin", passwordEncoder.encode("adminPass"));
                 userRepository.save(admin);
             }
 
