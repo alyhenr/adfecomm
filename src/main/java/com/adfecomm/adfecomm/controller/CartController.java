@@ -17,7 +17,7 @@ public class CartController {
     @Autowired
     CartService cartService;
 
-    @PostMapping("/carts/products/{productId}/quantity/{quantity}")
+    @PostMapping("/user/cart/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart(
             @PathVariable Long productId,
             @PathVariable Integer quantity

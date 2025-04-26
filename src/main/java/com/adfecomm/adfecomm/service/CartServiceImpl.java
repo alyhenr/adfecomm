@@ -5,6 +5,7 @@ import com.adfecomm.adfecomm.model.Cart;
 import com.adfecomm.adfecomm.model.CartItem;
 import com.adfecomm.adfecomm.model.Product;
 import com.adfecomm.adfecomm.payload.CartDTO;
+import com.adfecomm.adfecomm.payload.CartItemDTO;
 import com.adfecomm.adfecomm.payload.ProductDTO;
 import com.adfecomm.adfecomm.repository.CartItemRepository;
 import com.adfecomm.adfecomm.repository.CartRepository;
@@ -49,21 +50,32 @@ public class CartServiceImpl implements CartService {
             throw new APIException("Asked quantity exceeds current product quantity available. Asked: " + quantity + ", Available: " + productDTO.getQuantity());
 
         Cart cart = getUserCart();
-        CartItem cartItem = cartItemRepository.findByCartItemIdAndProductItemId(cart.getCartId(), productId);
+        CartItem cartItem = cartItemRepository.findByCartItemIdAndProductId(cart.getCartId(), productId);
         if (Objects.isNull(cartItem)) {
             cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
         } else {
-            cartItem.setQuantity(quantity);
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);
             cartItem.setDiscount(productDTO.getDiscount());
-            cartItem.setProductPrice(productDTO.getPrice());
+            cartItem.setPrice(productDTO.getPrice());
         }
-
+        cartItemRepository.save(cartItem);
         List<CartItem> cartItemList = cart.getCartItems();
         cartItemList.add(cartItem);
         cart.setCartItems(cartItemList);
         cart.setTotalPrice(cart.getTotalPrice() + (productDTO.getPrice() * (1 - productDTO.getDiscount()/100)) * quantity);
 
-        return modelMapper.map(cartRepository.save(cart), CartDTO.class);
+        CartDTO cartDTO = modelMapper.map(cartRepository.save(cart), CartDTO.class);
+        cartDTO.setCartItemsDTO(cart.getCartItems()
+                .stream()
+                .map(c -> new CartItemDTO(c.getCartItemId()
+                        , c.getCart().getCartId()
+                        , c.getProduct().getProductId()
+                        , c.getQuantity()
+                        , c.getDiscount()
+                        , c.getPrice()))
+                .toList());
+        return cartDTO;
+
     }
 
     private Cart getUserCart() {

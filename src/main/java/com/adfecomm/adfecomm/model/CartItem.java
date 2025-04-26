@@ -29,8 +29,13 @@ public class CartItem {
 
     private Integer quantity;
     private Double discount;
-    private Double productPrice;
+    private Double price;
 
     public CartItem(Cart cart, Product product, @NotNull Integer quantity, @PositiveOrZero Double discount, @NotNull @Positive double price) {
+        this.cart = cart;
+        this.product = product;
+        this.quantity = quantity;
+        this.discount = discount;
+        this.price = price;
     }
 }
