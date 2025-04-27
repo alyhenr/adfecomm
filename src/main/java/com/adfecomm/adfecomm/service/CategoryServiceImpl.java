@@ -4,17 +4,14 @@ import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Category;
 import com.adfecomm.adfecomm.payload.CategoryDTO;
-import com.adfecomm.adfecomm.payload.CategoryResponse;
+import com.adfecomm.adfecomm.payload.ListResponse;
 import com.adfecomm.adfecomm.repository.CategoryRepository;
+import com.adfecomm.adfecomm.util.ListResponseBuilder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -22,26 +19,19 @@ public class CategoryServiceImpl implements CategoryService {
     private CategoryRepository categoryRepository;
     @Autowired
     private ModelMapper modelMapper;
+    @Autowired
+    ListResponseBuilder listResponseBuilder;
 
     @Override
-    public CategoryResponse getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-        Sort sortByOrderBy = sortOrder.equalsIgnoreCase("asc")
-                ?  Sort.by(sortBy).ascending()
-                :  Sort.by(sortBy).descending();
-
-        Pageable pageDetails = PageRequest.of(pageNumber, pageSize, sortByOrderBy);
-        Page<Category> categoryPage = categoryRepository.findAll(pageDetails);
-        List<CategoryDTO> categories = categoryPage.getContent().stream()
-                                        .map(category -> modelMapper.map(category, CategoryDTO.class))
-                                        .toList();
-        CategoryResponse categoryResponse = new CategoryResponse();
-        categoryResponse.setContent(categories);
-        categoryResponse.setPageNumber(categoryPage.getNumber());
-        categoryResponse.setPageSize(categoryPage.getSize());
-        categoryResponse.setTotalElements(categoryPage.getTotalElements());
-        categoryResponse.setTotalPages(categoryPage.getTotalPages());
-        categoryResponse.setLastPage(categoryPage.isLast());
-        return categoryResponse;
+    public ListResponse getAllCategories(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable categoryPageable = ListResponseBuilder.create()
+                .PageNumber(pageNumber)
+                .PageSize(pageSize)
+                .SortBy(sortBy)
+                .SortOrder(sortOrder)
+                .buildPage();
+        Page<Category> categoryPage = categoryRepository.findAll(categoryPageable);
+        return listResponseBuilder.createListResponse(categoryPage, CategoryDTO.class);
     }
 
     @Override

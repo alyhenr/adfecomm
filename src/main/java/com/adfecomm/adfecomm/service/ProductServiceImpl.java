@@ -4,26 +4,16 @@ import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Category;
 import com.adfecomm.adfecomm.model.Product;
-import com.adfecomm.adfecomm.payload.CategoryDTO;
-import com.adfecomm.adfecomm.payload.CategoryResponse;
-import com.adfecomm.adfecomm.payload.ProductDTO;
-import com.adfecomm.adfecomm.payload.ProductResponse;
+import com.adfecomm.adfecomm.payload.*;
 import com.adfecomm.adfecomm.repository.CategoryRepository;
 import com.adfecomm.adfecomm.repository.ProductRepository;
+import com.adfecomm.adfecomm.util.ListResponseBuilder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.Function;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -35,50 +25,45 @@ public class ProductServiceImpl implements ProductService {
     private CategoryRepository categoryRepository;
     @Autowired
     private FileServiceImpl fileService;
-
-    private Pageable createPage(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-        Sort sortByOrderBy = sortOrder.equalsIgnoreCase("asc")
-                ?  Sort.by(sortBy).ascending()
-                :  Sort.by(sortBy).descending();
-
-        return PageRequest.of(pageNumber, pageSize, sortByOrderBy);
-    }
-
-    private ProductResponse createProductResponse(Page<Product> productPage) {
-        List<ProductDTO> products = productPage.getContent().stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
-                .toList();
-        ProductResponse productResponse = new ProductResponse();
-        productResponse.setContent(products);
-        productResponse.setPageNumber(productPage.getNumber());
-        productResponse.setPageSize(productPage.getSize());
-        productResponse.setTotalElements(productPage.getTotalElements());
-        productResponse.setTotalPages(productPage.getTotalPages());
-        productResponse.setLastPage(productPage.isLast());
-
-        return productResponse;
-    }
+    @Autowired
+    ListResponseBuilder listResponseBuilder;
 
     @Override
-    public ProductResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-        Pageable pageDetails = createPage(pageNumber, pageSize, sortBy, sortOrder);
-        Page<Product> productPage = productRepository.findAll(pageDetails);
-        return  createProductResponse(productPage);
+    public ListResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable productsPageable = ListResponseBuilder.create()
+                .PageNumber(pageNumber)
+                .PageSize(pageSize)
+                .SortBy(sortBy)
+                .SortOrder(sortOrder)
+                .buildPage();
+
+        Page<Product> productPage = productRepository.findAll(productsPageable);
+        return listResponseBuilder.createListResponse(productPage, ProductDTO.class);
     }
 
-    public ProductResponse getProductsByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-        Pageable pageDetails = createPage(pageNumber, pageSize, sortBy, sortOrder);
+    public ListResponse getProductsByCategory(Long categoryId, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable productsPageable = ListResponseBuilder.create()
+                .PageNumber(pageNumber)
+                .PageSize(pageSize)
+                .SortBy(sortBy)
+                .SortOrder(sortOrder)
+                .buildPage();
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException(categoryId, "Category", "id"));
-        Page<Product> productPage = productRepository.findByCategory(category, pageDetails);
-        return  createProductResponse(productPage);
+        Page<Product> productPage = productRepository.findByCategory(category, productsPageable);
+        return  listResponseBuilder.createListResponse(productPage, ProductDTO.class);
     }
 
     @Override
-    public ProductResponse getProductsByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
-        Pageable pageDetails = createPage(pageNumber, pageSize, sortBy, sortOrder);
-        Page<Product> productPage = productRepository.findByProductNameLikeIgnoreCase("%" + keyword + "%", pageDetails);
-        return createProductResponse(productPage);
+    public ListResponse getProductsByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable productsPageable = ListResponseBuilder.create()
+                .PageNumber(pageNumber)
+                .PageSize(pageSize)
+                .SortBy(sortBy)
+                .SortOrder(sortOrder)
+                .buildPage();
+        Page<Product> productPage = productRepository.findByProductNameLikeIgnoreCase("%" + keyword + "%", productsPageable);
+        return listResponseBuilder.createListResponse(productPage, ProductDTO.class);
     }
 
     private Product saveProduct(Product product) {

@@ -2,7 +2,7 @@ package com.adfecomm.adfecomm.controller;
 
 import com.adfecomm.adfecomm.config.AppConstants;
 import com.adfecomm.adfecomm.payload.CategoryDTO;
-import com.adfecomm.adfecomm.payload.CategoryResponse;
+import com.adfecomm.adfecomm.payload.ListResponse;
 import com.adfecomm.adfecomm.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,7 +20,7 @@ public class CategoryController {
     }
 
     @GetMapping("/public/categories")
-    public ResponseEntity<CategoryResponse> getAllCategories(
+    public ResponseEntity<ListResponse> getAllCategories(
             @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
             @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize,
             @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_BY_CATEGORY) String sortBy,

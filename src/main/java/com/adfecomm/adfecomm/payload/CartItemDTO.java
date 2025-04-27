@@ -12,6 +12,14 @@ public class CartItemDTO {
     private Long cartId;
     private Long productId;
     private Integer quantity;
-    private Double discount;
     private Double productPrice;
+    private Double discount;
+
+    public CartItemDTO(Long cartItemId, Long productId, Integer quantity, Double productPrice, Double discount) {
+        this.productPrice = productPrice;
+        this.discount = discount;
+        this.quantity = quantity;
+        this.productId = productId;
+        this.cartItemId = cartItemId;
+    }
 }

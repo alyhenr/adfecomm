@@ -5,16 +5,18 @@ import com.adfecomm.adfecomm.model.Cart;
 import com.adfecomm.adfecomm.model.CartItem;
 import com.adfecomm.adfecomm.model.Product;
 import com.adfecomm.adfecomm.payload.CartDTO;
-import com.adfecomm.adfecomm.payload.CartItemDTO;
+import com.adfecomm.adfecomm.payload.ListResponse;
 import com.adfecomm.adfecomm.payload.ProductDTO;
 import com.adfecomm.adfecomm.repository.CartItemRepository;
 import com.adfecomm.adfecomm.repository.CartRepository;
 import com.adfecomm.adfecomm.repository.ProductRepository;
-import com.adfecomm.adfecomm.security.service.UserDetailsImpl;
 import com.adfecomm.adfecomm.util.AuthUtil;
+import com.adfecomm.adfecomm.util.ListResponseBuilder;
 import jakarta.validation.constraints.NotNull;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,10 +34,18 @@ public class CartServiceImpl implements CartService {
     CartItemRepository cartItemRepository;
     @Autowired
     AuthUtil authUtil;
-
+    @Autowired
+    ListResponseBuilder listResponseBuilder;
     @Override
-    public List<CartDTO> getAllCarts() {
-        return null;
+    public ListResponse getAllCarts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        Pageable cartPageable = ListResponseBuilder.create()
+                .PageNumber(pageNumber)
+                .PageSize(pageSize)
+                .SortBy(sortBy)
+                .SortOrder(sortOrder)
+                .buildPage();
+        Page<Cart> cartPage = cartRepository.findAll(cartPageable);
+        return listResponseBuilder.createListResponse(cartPage, CartDTO.class);
     }
 
     /*
@@ -51,11 +61,9 @@ public class CartServiceImpl implements CartService {
 
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
 
-        if (productDTO.getQuantity() < quantity)
-            throw new APIException("Asked quantity exceeds current product quantity available. Asked: " + quantity + ", Available: " + productDTO.getQuantity());
-
         Cart cart = getUserCart();
         CartItem cartItem = cartItemRepository.findByCartItemIdAndProductId(cart.getCartId(), productId);
+
         if (Objects.isNull(cartItem)) {
             cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
         } else {
@@ -63,24 +71,17 @@ public class CartServiceImpl implements CartService {
             cartItem.setDiscount(productDTO.getDiscount());
             cartItem.setPrice(productDTO.getPrice());
         }
+
+        if (productDTO.getQuantity() < cartItem.getQuantity())
+            throw new APIException("Asked quantity exceeds current product quantity available. Asked: " + cartItem.getQuantity() + ", Available: " + productDTO.getQuantity());
+
         cartItemRepository.save(cartItem);
         List<CartItem> cartItemList = cart.getCartItems();
         cartItemList.add(cartItem);
         cart.setCartItems(cartItemList);
         cart.setTotalPrice(cart.getTotalPrice() + (productDTO.getPrice() * (1 - productDTO.getDiscount()/100)) * quantity);
 
-        CartDTO cartDTO = modelMapper.map(cartRepository.save(cart), CartDTO.class);
-        cartDTO.setCartItems(cart.getCartItems()
-                .stream()
-                .map(c -> new CartItemDTO(c.getCartItemId()
-                        , c.getCart().getCartId()
-                        , c.getProduct().getProductId()
-                        , c.getQuantity()
-                        , c.getDiscount()
-                        , c.getPrice()))
-                .toList());
-        return cartDTO;
-
+        return modelMapper.map(cartRepository.save(cart), CartDTO.class);
     }
 
     private Cart getUserCart() {
