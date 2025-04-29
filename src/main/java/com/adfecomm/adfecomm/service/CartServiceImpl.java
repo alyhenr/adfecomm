@@ -1,6 +1,7 @@
 package com.adfecomm.adfecomm.service;
 
 import com.adfecomm.adfecomm.exceptions.APIException;
+import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Cart;
 import com.adfecomm.adfecomm.model.CartItem;
 import com.adfecomm.adfecomm.model.Product;
@@ -13,6 +14,7 @@ import com.adfecomm.adfecomm.repository.ProductRepository;
 import com.adfecomm.adfecomm.util.AuthUtil;
 import com.adfecomm.adfecomm.util.ListResponseBuilder;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -55,7 +57,7 @@ public class CartServiceImpl implements CartService {
         4. Add product to cart if not already, otherwise updates quantity, price and discount
      */
     @Override
-    public CartDTO addProductToCart(Long productId, @NotNull  Integer quantity) {
+    public CartDTO addProductToCart(Long productId, @NotNull @PositiveOrZero  Integer quantity) {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new APIException("Product not found with id: " + productId));
 
@@ -64,22 +66,29 @@ public class CartServiceImpl implements CartService {
         Cart cart = getUserCart();
         CartItem cartItem = cartItemRepository.findByCartItemIdAndProductId(cart.getCartId(), productId);
 
+        Double cartTotalPrice;
         if (Objects.isNull(cartItem)) {
+            cartTotalPrice = cart.getTotalPrice();
             cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
         } else {
-            cartItem.setQuantity(cartItem.getQuantity() + quantity);
-            cartItem.setDiscount(productDTO.getDiscount());
-            cartItem.setPrice(productDTO.getPrice());
+            cartTotalPrice = cart.getTotalPrice()
+                    - cartItem.getPrice() * (1 - cartItem.getDiscount()/100) * Math.max(cartItem.getQuantity(), 0);
+            if (quantity <= 0) cartItemRepository.delete(cartItem);
+            else {
+                cartItem.setQuantity(quantity);
+                cartItem.setDiscount(productDTO.getDiscount());
+                cartItem.setPrice(productDTO.getPrice());
+            }
         }
 
-        if (productDTO.getQuantity() < cartItem.getQuantity())
+        if (productDTO.getQuantity() < quantity)
             throw new APIException("Asked quantity exceeds current product quantity available. Asked: " + cartItem.getQuantity() + ", Available: " + productDTO.getQuantity());
 
         cartItemRepository.save(cartItem);
         List<CartItem> cartItemList = cart.getCartItems();
         cartItemList.add(cartItem);
         cart.setCartItems(cartItemList);
-        cart.setTotalPrice(cart.getTotalPrice() + (productDTO.getPrice() * (1 - productDTO.getDiscount()/100)) * quantity);
+        cart.setTotalPrice(cartTotalPrice + (productDTO.getPrice() * (1 - productDTO.getDiscount()/100)) * quantity);
 
         return modelMapper.map(cartRepository.save(cart), CartDTO.class);
     }
@@ -90,5 +99,12 @@ public class CartServiceImpl implements CartService {
             return cart;
         }
         return cartRepository.save(new Cart(authUtil.loggedInUser(), 0.00));
+    }
+
+    @Override
+    public CartDTO getCartByUser() {
+        Cart cart = cartRepository.findCartByEmail(authUtil.loggedInEmail());
+        if (Objects.isNull(cart)) throw new ResourceNotFoundException("Cart");
+        return modelMapper.map(cart, CartDTO.class);
     }
 }

@@ -26,6 +26,11 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.OK).body(cartService.getAllCarts(pageNumber, pageSize, sortBy, sortOrder));
     }
 
+    @GetMapping("/users/carts/user")
+    public ResponseEntity<CartDTO> getCartById() {
+        return ResponseEntity.status(HttpStatus.OK).body(cartService.getCartByUser());
+    }
+
     @PostMapping("/users/carts/products/{productId}/quantity/{quantity}")
     public ResponseEntity<CartDTO> addProductToCart(
             @PathVariable Long productId,
@@ -33,4 +38,6 @@ public class CartController {
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cartService.addProductToCart(productId, quantity));
     }
+
+
 }
