@@ -13,6 +13,7 @@ import com.adfecomm.adfecomm.repository.CartRepository;
 import com.adfecomm.adfecomm.repository.ProductRepository;
 import com.adfecomm.adfecomm.util.AuthUtil;
 import com.adfecomm.adfecomm.util.ListResponseBuilder;
+import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import org.modelmapper.ModelMapper;
@@ -70,6 +71,7 @@ public class CartServiceImpl implements CartService {
         if (Objects.isNull(cartItem)) {
             cartTotalPrice = cart.getTotalPrice();
             if (quantity > 0) cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
+            else return null;
         } else {
             cartTotalPrice = cart.getTotalPrice()
                     - cartItem.getPrice() * (1 - cartItem.getDiscount()/100) * Math.max(cartItem.getQuantity(), 0);
@@ -80,12 +82,11 @@ public class CartServiceImpl implements CartService {
                     cartRepository.delete(cart);
                     return null;
                 }
+                return modelMapper.map(cartRepository.save(cart), CartDTO.class);
             }
-            else {
-                cartItem.setQuantity(quantity);
-                cartItem.setDiscount(productDTO.getDiscount());
-                cartItem.setPrice(productDTO.getPrice());
-            }
+            cartItem.setQuantity(quantity);
+            cartItem.setDiscount(productDTO.getDiscount());
+            cartItem.setPrice(productDTO.getPrice());
         }
 
         if (productDTO.getQuantity() < quantity)
@@ -126,6 +127,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public CartDTO deleteProdFromCart(Long productId, Long cartId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundException(cartId, "Cart", "cartId"));
@@ -146,8 +148,9 @@ public class CartServiceImpl implements CartService {
         cart.setTotalPrice(cartTotalPrice);
         cartItemRepository.delete(cartItem); // Optional if orphanRemoval=true
 
-        cart.setTotalPrice(cartTotalPrice);
-        cartItemRepository.delete(cartItem);
+        if (isCartEmpty()) {
+            cartRepository.delete(cart);
+        }
 
         return modelMapper.map(cart, CartDTO.class);
     }
