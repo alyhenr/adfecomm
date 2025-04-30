@@ -64,16 +64,23 @@ public class CartServiceImpl implements CartService {
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
 
         Cart cart = getUserCart();
-        CartItem cartItem = cartItemRepository.findByCartItemIdAndProductId(cart.getCartId(), productId);
+        CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cart.getCartId(), productId);
 
         Double cartTotalPrice;
         if (Objects.isNull(cartItem)) {
             cartTotalPrice = cart.getTotalPrice();
-            cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
+            if (quantity > 0) cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
         } else {
             cartTotalPrice = cart.getTotalPrice()
                     - cartItem.getPrice() * (1 - cartItem.getDiscount()/100) * Math.max(cartItem.getQuantity(), 0);
-            if (quantity <= 0) cartItemRepository.delete(cartItem);
+            if (quantity <= 0) {
+                cartItemRepository.delete(cartItem);
+                //Check if cart is empty, if so, delete it
+                if (isCartEmpty()) {
+                    cartRepository.delete(cart);
+                    return null;
+                }
+            }
             else {
                 cartItem.setQuantity(quantity);
                 cartItem.setDiscount(productDTO.getDiscount());
@@ -101,10 +108,47 @@ public class CartServiceImpl implements CartService {
         return cartRepository.save(new Cart(authUtil.loggedInUser(), 0.00));
     }
 
+    private boolean isCartEmpty() {
+        Cart cart = cartRepository.findCartByEmail(authUtil.loggedInEmail());
+        if (cart != null) {
+            for (CartItem ci: cart.getCartItems()) {
+                if (ci.getQuantity() > 0) return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public CartDTO getCartByUser() {
         Cart cart = cartRepository.findCartByEmail(authUtil.loggedInEmail());
         if (Objects.isNull(cart)) throw new ResourceNotFoundException("Cart");
+        return modelMapper.map(cart, CartDTO.class);
+    }
+
+    @Override
+    public CartDTO deleteProdFromCart(Long productId, Long cartId) {
+        Cart cart = cartRepository.findById(cartId)
+                .orElseThrow(() -> new ResourceNotFoundException(cartId, "Cart", "cartId"));
+
+        CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cartId, productId);
+
+        if (cartItem == null) {
+            throw new ResourceNotFoundException(productId, "Product", "productId");
+        }
+
+//        cart.setTotalPrice(cart.getTotalPrice() - (cartItem.getPrice() * (1 - cartItem.getDiscount()) * cartItem.getQuantity()));
+        double cartTotalPrice = 0.0;
+        for (CartItem ci: cart.getCartItems()) {
+            if (Objects.equals(ci.getProduct().getProductId(), productId)) continue;
+            cartTotalPrice += ci.getPrice() * (1-ci.getDiscount()) * ci.getQuantity();
+        }
+        cart.getCartItems().removeIf(ci -> ci.getProduct().getProductId().equals(productId));
+        cart.setTotalPrice(cartTotalPrice);
+        cartItemRepository.delete(cartItem); // Optional if orphanRemoval=true
+
+        cart.setTotalPrice(cartTotalPrice);
+        cartItemRepository.delete(cartItem);
+
         return modelMapper.map(cart, CartDTO.class);
     }
 }
