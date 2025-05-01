@@ -12,6 +12,7 @@ import com.adfecomm.adfecomm.repository.CartRepository;
 import com.adfecomm.adfecomm.repository.CategoryRepository;
 import com.adfecomm.adfecomm.repository.ProductRepository;
 import com.adfecomm.adfecomm.util.ListResponseBuilder;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -156,6 +157,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductDTO updateProductImage(Long productId, MultipartFile image) {
         Product product = productRepository
                 .findById(productId)
@@ -171,11 +173,18 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductDTO deleteProduct(Long productId) {
         Product product = productRepository
                             .findById(productId)
                             .orElseThrow(() ->new ResourceNotFoundException(productId, "product", "id"));
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+
+        List<Cart> carts = cartRepository.findCartsByProduct(productId);
+        for (Cart c: carts) {
+            cartService.deleteProdFromCart(productId, c.getCartId());
+        }
+
         productRepository.delete(product);
         return productDTO;
 
