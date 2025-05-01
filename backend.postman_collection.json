@@ -8,6 +8,167 @@
 	},
 	"item": [
 		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "Sign-in",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user1@example.com\",\n    \"password\": \"password1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/auth/sign-in",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"sign-in"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign-up",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"test1\",\n    \"email\": \"test1@gmail.com\",\n    \"password\": \"admin\"\n    // \"roles\" : [\n    //     {\n    //         \"roleName\": \"ROLE_ADMIN\"\n    //     }\n    // ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/auth/sign-up",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"sign-up"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign-out",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"test\",\n    \"email\": \"test@gmail.com\",\n    \"password\": \"admin\"\n    // \"roles\" : [\n    //     {\n    //         \"roleName\": \"ROLE_ADMIN\"\n    //     }\n    // ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/auth/sign-out",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"sign-out"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Username",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"adminPass\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/auth/user",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"auth",
+								"user"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/admin/users",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Categories",
 			"item": [
 				{
@@ -92,14 +253,14 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8080/api/public/categories/1",
+							"raw": "localhost:8080/api/admin/categories/1",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
 								"api",
-								"public",
+								"admin",
 								"categories",
 								"1"
 							]
@@ -139,7 +300,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "localhost:8080/api/public/products?pageNumber=0&pageSize=30&sortBy=productId",
+							"raw": "localhost:8080/api/public/products?pageNumber=0&pageSize=30&sortBy=productId&sortOrder=asc",
 							"host": [
 								"localhost"
 							],
@@ -164,8 +325,7 @@
 								},
 								{
 									"key": "sortOrder",
-									"value": "asc",
-									"disabled": true
+									"value": "asc"
 								}
 							]
 						}
@@ -223,7 +383,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"productName\": \"test product new\",\n    \"description\": \"product cool description\",\n    \"price\": 10.52,\n    \"quantity\": 5,\n    \"category\": {\n        \"categoryId\": 1\n    }\n}",
+							"raw": "{\n    \"productName\": \"test product new v2\",\n    \"description\": \"product cool description\",\n    \"price\": 7.20,\n    \"quantity\": 3,\n    \"category\": {\n        \"categoryId\": 1\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -260,7 +420,7 @@
 							}
 						},
 						"url": {
-							"raw": "localhost:8080/api/admin/categories/1/product",
+							"raw": "localhost:8080/api/admin/categories/2/product",
 							"host": [
 								"localhost"
 							],
@@ -269,7 +429,7 @@
 								"api",
 								"admin",
 								"categories",
-								"1",
+								"2",
 								"product"
 							]
 						}
@@ -362,33 +522,109 @@
 			]
 		},
 		{
-			"name": "Login",
+			"name": "Cart",
 			"item": [
 				{
-					"name": "Sign-in",
+					"name": "Add product to Cart",
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "localhost:8080/sign-in",
+							"raw": "localhost:8080/api/users/carts/products/1/quantity/3",
 							"host": [
 								"localhost"
 							],
 							"port": "8080",
 							"path": [
-								"sign-in"
+								"api",
+								"users",
+								"carts",
+								"products",
+								"1",
+								"quantity",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Carts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/admin/carts?pageNumber=0&pageSize=10&sortBy=cartItems.product.price&sortOrder=asc",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"carts"
+							],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "0"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "cartItems.product.price"
+								},
+								{
+									"key": "sortOrder",
+									"value": "asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Cart",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/users/carts/user",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"carts",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete product from cart",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/users/carts/2/product/2",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"carts",
+								"2",
+								"product",
+								"2"
 							]
 						}
 					},
@@ -397,16 +633,6 @@
 			]
 		}
 	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTc0NTI0Njg0OSwiZXhwIjoxNzQ1MjUwNDQ5fQ.bPS8O6ayYis4ld17T1fvLcJ8TNrU2eBfv9M6ju1DDdc",
-				"type": "string"
-			}
-		]
-	},
 	"event": [
 		{
 			"listen": "prerequest",
