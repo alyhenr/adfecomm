@@ -2,9 +2,13 @@ package com.adfecomm.adfecomm.service;
 
 import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
+import com.adfecomm.adfecomm.model.Cart;
+import com.adfecomm.adfecomm.model.CartItem;
 import com.adfecomm.adfecomm.model.Category;
 import com.adfecomm.adfecomm.model.Product;
 import com.adfecomm.adfecomm.payload.*;
+import com.adfecomm.adfecomm.repository.CartItemRepository;
+import com.adfecomm.adfecomm.repository.CartRepository;
 import com.adfecomm.adfecomm.repository.CategoryRepository;
 import com.adfecomm.adfecomm.repository.ProductRepository;
 import com.adfecomm.adfecomm.util.ListResponseBuilder;
@@ -15,6 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Objects;
+
 @Service
 public class ProductServiceImpl implements ProductService {
     @Autowired
@@ -24,9 +31,15 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private CategoryRepository categoryRepository;
     @Autowired
+    CartRepository cartRepository;
+    @Autowired
+    CartItemRepository cartItemRepository;
+    @Autowired
     private FileServiceImpl fileService;
     @Autowired
     ListResponseBuilder listResponseBuilder;
+    @Autowired
+    CartService cartService;
 
     @Override
     public ListResponse getAllProducts(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
@@ -124,7 +137,22 @@ public class ProductServiceImpl implements ProductService {
         /*
         Update carts which have this product
          */
+        updateCartsWithProduct(productId, product);
         return productDTO;
+    }
+
+    private void updateCartsWithProduct(Long productId, Product product) {
+        List<Cart>  carts = cartRepository.findCartsByProduct(productId);
+        for (Cart c: carts) {
+            CartItem cartItem = cartItemRepository.findByCartIdAndProductId(c.getCartId(), productId);
+            cartItem.setProduct(product);
+            cartItem.setPrice(product.getPrice());
+            cartItem.setDiscount(product.getDiscount());
+            cartItemRepository.save(cartItem);
+
+            c.setTotalPrice(cartService.calcCartTotalPrice(c));
+            cartRepository.save(c);
+        }
     }
 
     @Override

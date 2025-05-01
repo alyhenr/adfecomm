@@ -138,14 +138,8 @@ public class CartServiceImpl implements CartService {
             throw new ResourceNotFoundException(productId, "Product", "productId");
         }
 
-//        cart.setTotalPrice(cart.getTotalPrice() - (cartItem.getPrice() * (1 - cartItem.getDiscount()) * cartItem.getQuantity()));
-        double cartTotalPrice = 0.0;
-        for (CartItem ci: cart.getCartItems()) {
-            if (Objects.equals(ci.getProduct().getProductId(), productId)) continue;
-            cartTotalPrice += ci.getPrice() * (1-ci.getDiscount()) * ci.getQuantity();
-        }
         cart.getCartItems().removeIf(ci -> ci.getProduct().getProductId().equals(productId));
-        cart.setTotalPrice(cartTotalPrice);
+        cart.setTotalPrice(calcCartTotalPrice(cart));
         cartItemRepository.delete(cartItem); // Optional if orphanRemoval=true
 
         if (isCartEmpty()) {
@@ -153,5 +147,13 @@ public class CartServiceImpl implements CartService {
         }
 
         return modelMapper.map(cart, CartDTO.class);
+    }
+
+    public double calcCartTotalPrice(Cart cart) {
+        double cartTotalPrice = 0.0;
+        for (CartItem ci: cart.getCartItems()) {
+            cartTotalPrice += ci.getPrice() * (1-ci.getDiscount()) * ci.getQuantity();
+        }
+        return cartTotalPrice;
     }
 }

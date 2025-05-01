@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.service;
 
+import com.adfecomm.adfecomm.model.Cart;
 import com.adfecomm.adfecomm.payload.CartDTO;
 import com.adfecomm.adfecomm.payload.ListResponse;
 import jakarta.transaction.Transactional;
@@ -13,4 +14,5 @@ public interface CartService {
     CartDTO getCartByUser();
     @Transactional
     CartDTO deleteProdFromCart(Long productId, Long cartId);
+    double calcCartTotalPrice(Cart cart);
 }
