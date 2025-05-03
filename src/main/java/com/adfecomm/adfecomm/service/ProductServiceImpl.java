@@ -134,10 +134,6 @@ public class ProductServiceImpl implements ProductService {
         saveProduct(product);
         productDTO.setProductId(productId);
 
-        //TODO
-        /*
-        Update carts which have this product
-         */
         updateCartsWithProduct(productId, product);
         return productDTO;
     }
