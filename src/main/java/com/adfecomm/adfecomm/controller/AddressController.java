@@ -37,11 +37,35 @@ public class AddressController {
         return ResponseEntity.ok().body(addressService.getUserAddresses());
     }
 
+    @GetMapping("/admin/addresses/{addressId}")
+    public ResponseEntity<?> getAddressById(@PathVariable Long addressId) {
+        return ResponseEntity.ok().body(addressService.getAddressById(addressId));
+    }
+
+    @GetMapping("/users/addresses/{addressId}")
+    public ResponseEntity<?> getUserAddressById(@PathVariable Long addressId) {
+        return ResponseEntity.ok().body(addressService.getUserAddressById(addressId));
+    }
+
     @PostMapping("/users/addresses/user/address")
     public ResponseEntity<?> addAddressToUser(@Valid @RequestBody AddressDTO addressDTO) {
         User user = authUtil.loggedInUser();
         return ResponseEntity.status(HttpStatus.CREATED).body(
                 addressService.addAddressToUser(user, addressDTO)
+        );
+    }
+
+    @PutMapping("/users/addresses/{addressId}")
+    public ResponseEntity<?> updateUserAddress(@PathVariable Long addressId, @Valid @RequestBody AddressDTO address) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+                addressService.updateUserAddress(addressId, address)
+        );
+    }
+
+    @DeleteMapping("/users/addresses/{addressId}")
+    public ResponseEntity<?> deleteUserAddress(@PathVariable Long addressId) {
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(
+                addressService.deleteUserAddress(addressId)
         );
     }
 }
