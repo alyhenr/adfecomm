@@ -17,7 +17,6 @@ public class AuthUtil {
 
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println(authentication.getName());
         return userRepository.findByEmail(((UserDetailsImpl) authentication.getPrincipal()).getEmail()) //Cookie generated with email currently, on JwtUtils
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }

@@ -18,4 +18,5 @@ public interface ProductService {
     ProductDTO updateProductImage(Long productId, MultipartFile image);
     @Transactional
     ProductDTO deleteProduct(Long productId);
+    void updateProductQuantity(Long productId, Integer quantity);
 }
