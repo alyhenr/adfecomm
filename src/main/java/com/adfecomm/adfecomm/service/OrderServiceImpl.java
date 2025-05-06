@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -56,6 +57,8 @@ public class OrderServiceImpl implements OrderService {
         User user = authUtil.loggedInUser();
         Cart cart  = cartRepository.findCartByEmail(user.getEmail());
 
+        if (Objects.isNull(cart)) throw new ResourceNotFoundException("User cart is empty");
+
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException(addressId, "Address", "addressId"));
 
@@ -92,9 +95,10 @@ public class OrderServiceImpl implements OrderService {
             orderItems.add(orderItem);
         }
 
-        List<OrderItem> orderItemList = orderItemRepository.saveAll(orderItems);
-        order.setOrderItems(orderItemList);
         Order newOrder = orderRepository.save(order);
+        List<OrderItem> orderItemList = orderItemRepository.saveAll(orderItems);
+        newOrder.setOrderItems(orderItemList);
+        orderRepository.save(newOrder);
 
         //TODO
 //        PaymentDTO paymentDTO = paymentService.managePayment(paymentMethod, newOrder.getOrderId());

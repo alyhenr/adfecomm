@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.mapping.Join;
 
 @Entity
 @Data
@@ -19,6 +20,7 @@ public class Payment {
     @OneToOne(cascade = {
             CascadeType.PERSIST, CascadeType.MERGE
     })
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @NotBlank
