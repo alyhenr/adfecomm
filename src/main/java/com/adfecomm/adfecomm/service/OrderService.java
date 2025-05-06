@@ -5,5 +5,5 @@ import jakarta.transaction.Transactional;
 
 public interface OrderService {
     @Transactional
-    OrderDTO placeOrder(OrderDTO orderDTO, String paymentMethod);
+    OrderDTO placeOrder(String paymentMethod, Long addressId);
 }

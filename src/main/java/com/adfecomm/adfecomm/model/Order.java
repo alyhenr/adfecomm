@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -24,9 +26,13 @@ public class Order {
     @Column
     private String email;
 
-    private Double totalAmount;
-    private OrderStatus orderStatus;
+    private Double totalPrice;
     private LocalDate orderDate;
+
+    @ToString.Exclude
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_status")
+    private OrderStatus orderStatus;
 
     @OneToMany(cascade = {
             CascadeType.PERSIST, CascadeType.MERGE

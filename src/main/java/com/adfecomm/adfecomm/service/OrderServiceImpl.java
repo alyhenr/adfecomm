@@ -2,18 +2,21 @@ package com.adfecomm.adfecomm.service;
 
 import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
-import com.adfecomm.adfecomm.model.Order;
-import com.adfecomm.adfecomm.model.Payment;
-import com.adfecomm.adfecomm.model.Product;
+import com.adfecomm.adfecomm.model.*;
 import com.adfecomm.adfecomm.payload.OrderDTO;
 import com.adfecomm.adfecomm.payload.OrderItemDTO;
-import com.adfecomm.adfecomm.repository.OrderRepository;
-import com.adfecomm.adfecomm.repository.PaymentRepository;
-import com.adfecomm.adfecomm.repository.ProductRepository;
+import com.adfecomm.adfecomm.payload.PaymentDTO;
+import com.adfecomm.adfecomm.repository.*;
+import com.adfecomm.adfecomm.util.AuthUtil;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -21,10 +24,16 @@ public class OrderServiceImpl implements OrderService {
     OrderRepository orderRepository;
 
     @Autowired
-    PaymentRepository paymentRepository;
+    ProductRepository productRepository;
 
     @Autowired
-    ProductRepository productRepository;
+    CartRepository cartRepository;
+
+    @Autowired
+    AddressRepository addressRepository;
+
+    @Autowired
+    OrderItemRepository orderItemRepository;
 
     @Autowired
     ProductService productService;
@@ -33,31 +42,66 @@ public class OrderServiceImpl implements OrderService {
     PaymentService paymentService;
 
     @Autowired
+    CartService cartService;
+
+    @Autowired
     ModelMapper modelMapper;
 
-    @Override
+    @Autowired
+    AuthUtil authUtil;
+
     @Transactional
-    public OrderDTO placeOrder(OrderDTO orderDTO, String paymentMethod) {
-        for (OrderItemDTO orderItemDTO: orderDTO.getOrderItems()) {
-            Product product = productRepository.findById(orderItemDTO.getProduct().getProductId())
+    @Override
+    public OrderDTO placeOrder(String paymentMethod, Long addressId) {
+        User user = authUtil.loggedInUser();
+        Cart cart  = cartRepository.findCartByEmail(user.getEmail());
+
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new ResourceNotFoundException(addressId, "Address", "addressId"));
+
+        //Create Order
+        Order order = new Order();
+        order.setEmail(user.getEmail());
+        order.setTotalPrice(cart.getTotalPrice());
+        order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
+        order.setOrderDate(LocalDate.now());
+        order.setAddress(address);
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItem cartItem: cart.getCartItems()) {
+            OrderItem orderItem = new OrderItem();
+            Product product = productRepository.findById(cartItem.getProduct().getProductId())
                     .orElseThrow(() -> new ResourceNotFoundException(
-                            orderItemDTO.getProduct().getProductId(),
-                            "Product",
+                            cartItem.getProduct().getProductId(),
+                            "Product is out of stock (deleted)",
                             "productId"
                     ));
 
-            if (product.getQuantity() < orderItemDTO.getQuantity())
-                throw  new APIException("Asked quantity (" + orderItemDTO.getQuantity() + ") for product: "
-                + product.getProductName() + " exceeds available quantity (" + product.getQuantity() + ")");
+            if (product.getQuantity() < cartItem.getQuantity())
+                throw  new APIException("Asked quantity (" + cartItem.getQuantity() + ") for product: "
+                        + product.getProductName() + " exceeds available quantity ("
+                        + product.getQuantity() + ")");
 
-            productService.updateProductQuantity(product.getProductId(), product.getQuantity() - orderItemDTO.getQuantity());
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setOrderedProductPrice(cartItem.getProduct().getPrice());
+            orderItem.setDiscount(cartItem.getProduct().getDiscount());
+            orderItem.setProduct(cartItem.getProduct());
+            orderItem.setOrder(order);
+
+            productService.updateProductQuantity(product.getProductId(), product.getQuantity() - cartItem.getQuantity());
+            orderItems.add(orderItem);
         }
 
-        Order newOrder = orderRepository.save(
-                modelMapper.map(orderDTO, Order.class)
-        );
+        List<OrderItem> orderItemList = orderItemRepository.saveAll(orderItems);
+        order.setOrderItems(orderItemList);
+        Order newOrder = orderRepository.save(order);
 
-        paymentService.managePayment(paymentMethod, newOrder.getOrderId());
+        //TODO
+        PaymentDTO paymentDTO = paymentService.managePayment(paymentMethod, newOrder.getOrderId());
+        order.setPayment(modelMapper.map(paymentDTO, Payment.class));
+
+        cartService.clearUserCart();
+
         return modelMapper.map(newOrder, OrderDTO.class);
     }
 }

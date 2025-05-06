@@ -15,4 +15,5 @@ public interface CartService {
     @Transactional
     CartDTO deleteProdFromCart(Long productId, Long cartId);
     double calcCartTotalPrice(Cart cart);
+    void clearUserCart();
 }

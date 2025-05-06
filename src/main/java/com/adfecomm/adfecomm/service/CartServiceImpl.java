@@ -156,4 +156,9 @@ public class CartServiceImpl implements CartService {
         }
         return cartTotalPrice;
     }
+
+    @Override
+    public void clearUserCart() {
+        //TODO
+    }
 }

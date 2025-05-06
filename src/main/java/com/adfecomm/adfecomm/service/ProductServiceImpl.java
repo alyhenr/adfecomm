@@ -185,4 +185,16 @@ public class ProductServiceImpl implements ProductService {
         return productDTO;
 
     }
+
+    @Override
+    public void updateProductQuantity(Long productId, Integer quantity) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(productId, "Product", "productId"));
+
+        if (quantity < 0)
+            throw new APIException("Product quantity cannot be less than 0");
+
+        product.setQuantity(quantity);
+        productRepository.save(product);
+    }
 }
