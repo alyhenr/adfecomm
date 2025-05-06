@@ -169,6 +169,186 @@
 			]
 		},
 		{
+			"name": "Address",
+			"item": [
+				{
+					"name": "Get All Address",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/admin/addresses",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"addresses"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Address",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/users/addresses/user",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"addresses",
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Address By Id (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/admin/addresses/5",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"admin",
+								"addresses",
+								"5"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Address by Id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "localhost:8080/api/users/addresses/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"addresses",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add Address to User",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"city\": \"Ponta Grossa\",\n    \"state\": \"Parana\",\n    \"zipCode\": \"9999999\",\n    \"number\": 312,\n    \"reference\": \"Casa grande no centro\",\n    \"streetName\": \"Centro\",\n    \"buildingName\": \"ADF Tower\",\n    \"country\": \"Argentina\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/users/addresses/user/address",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"addresses",
+								"user",
+								"address"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Address",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"city\": \"Ponta Grossa, The Great City\",\n    \"state\": \"Parana\",\n    \"zipCode\": \"9999999\",\n    \"number\": 312,\n    \"reference\": \"Casa grande no centro\",\n    \"streetName\": \"Centro\",\n    \"buildingName\": \"ADF Tower\",\n    \"country\": \"Argentina\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/users/addresses/1",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"addresses",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Address",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"city\": \"Ponta Grossa\",\n    \"state\": \"Parana\",\n    \"zipCode\": \"9999999\",\n    \"number\": 312,\n    \"reference\": \"Casa grande no centro\",\n    \"streetName\": \"Centro\",\n    \"buildingName\": \"ADF Tower\",\n    \"country\": \"Argentina\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/users/addresses/user/address",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"addresses",
+								"user",
+								"address"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Categories",
 			"item": [
 				{
@@ -530,7 +710,7 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "localhost:8080/api/users/carts/products/1/quantity/3",
+							"raw": "localhost:8080/api/users/carts/products/1/quantity/2",
 							"host": [
 								"localhost"
 							],
@@ -542,7 +722,7 @@
 								"products",
 								"1",
 								"quantity",
-								"3"
+								"2"
 							]
 						}
 					},
@@ -625,6 +805,42 @@
 								"2",
 								"product",
 								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Place Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"addressId\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:8080/api/users/orders/payments/pix",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"users",
+								"orders",
+								"payments",
+								"pix"
 							]
 						}
 					},
