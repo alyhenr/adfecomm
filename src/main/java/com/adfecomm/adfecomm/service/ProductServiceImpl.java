@@ -131,7 +131,7 @@ public class ProductServiceImpl implements ProductService {
             .orElseThrow(() ->new ResourceNotFoundException(productId, "Product", "id"));
 
         product.setProductId(productId);
-        saveProduct(product);
+        productRepository.save(product);
         productDTO.setProductId(productId);
 
         updateCartsWithProduct(productId, product);

@@ -97,8 +97,8 @@ public class OrderServiceImpl implements OrderService {
         Order newOrder = orderRepository.save(order);
 
         //TODO
-        PaymentDTO paymentDTO = paymentService.managePayment(paymentMethod, newOrder.getOrderId());
-        order.setPayment(modelMapper.map(paymentDTO, Payment.class));
+//        PaymentDTO paymentDTO = paymentService.managePayment(paymentMethod, newOrder.getOrderId());
+//        order.setPayment(modelMapper.map(paymentDTO, Payment.class));
 
         cartService.clearUserCart();
 

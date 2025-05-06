@@ -5,6 +5,7 @@ import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.Cart;
 import com.adfecomm.adfecomm.model.CartItem;
 import com.adfecomm.adfecomm.model.Product;
+import com.adfecomm.adfecomm.model.User;
 import com.adfecomm.adfecomm.payload.CartDTO;
 import com.adfecomm.adfecomm.payload.ListResponse;
 import com.adfecomm.adfecomm.payload.ProductDTO;
@@ -159,6 +160,11 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public void clearUserCart() {
-        //TODO
+        User user = authUtil.loggedInUser();
+        Cart cart = cartRepository.findCartByEmail(user.getEmail());
+        for (CartItem cartItem: cart.getCartItems()) {
+            cartItemRepository.delete(cartItem);
+        }
+        cartRepository.delete(cart);
     }
 }
