@@ -23,6 +23,7 @@ public class Product {
     private String productName;
 
     @Size(min = 10, message = "Product name must have at least 10 characters")
+    @Column(length = 1000)
     private String description;
 
     @NotNull
