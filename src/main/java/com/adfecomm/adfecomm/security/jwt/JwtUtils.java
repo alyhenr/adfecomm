@@ -32,6 +32,9 @@ public class JwtUtils {
     @Value("${spring.app.jwtCookieName}")
     private String jwtCookie;
 
+    @Value("${spring.app.jwtCookieSecure}")
+    private boolean secure;
+
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         logger.debug("Authorization Header: {}", bearerToken);
@@ -53,8 +56,11 @@ public class JwtUtils {
     public ResponseCookie generateJwtCookie (UserDetailsImpl userPrincipal) {
         String jwt = generateTokenFromEmail(userPrincipal);
 
-        return ResponseCookie.from(jwtCookie, jwt).path("/api").maxAge(24*60*60)
+        return ResponseCookie.from(jwtCookie, jwt)
+                .path("/api")
+                .maxAge(24*60*60*60)
                 .httpOnly(false)
+                .secure(secure)
                 .build();
     }
 
