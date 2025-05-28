@@ -45,6 +45,13 @@ public class CartController {
                 : cartDTO);
     }
 
+    @PostMapping("/users/carts")
+    public ResponseEntity<?> createCart(
+            @RequestBody CartDTO cartDTO
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(cartService.createCart(cartDTO));
+    }
+
     @DeleteMapping("/users/carts/{cartId}/product/{productId}")
     public ResponseEntity<CartDTO> deleteProdFromCart(
             @PathVariable Long productId,

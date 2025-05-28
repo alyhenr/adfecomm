@@ -16,4 +16,5 @@ public interface CartService {
     CartDTO deleteProdFromCart(Long productId, Long cartId);
     double calcCartTotalPrice(Cart cart);
     void clearUserCart();
+    CartDTO createCart(CartDTO cartDTO);
 }

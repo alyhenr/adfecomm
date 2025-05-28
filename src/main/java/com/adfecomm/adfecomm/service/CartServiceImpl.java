@@ -71,8 +71,12 @@ public class CartServiceImpl implements CartService {
         Double cartTotalPrice;
         if (Objects.isNull(cartItem)) {
             cartTotalPrice = cart.getTotalPrice();
-            if (quantity > 0) cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
-            else return null;
+            if (quantity > 0) {
+                cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
+                List<CartItem> cartItemList = cart.getCartItems();
+                cartItemList.add(cartItem);
+                cart.setCartItems(cartItemList);
+            } else return null;
         } else {
             cartTotalPrice = cart.getTotalPrice()
                     - cartItem.getPrice() * (1 - cartItem.getDiscount()/100) * Math.max(cartItem.getQuantity(), 0);
@@ -94,12 +98,24 @@ public class CartServiceImpl implements CartService {
             throw new APIException("Asked quantity exceeds current product quantity available. Asked: " + cartItem.getQuantity() + ", Available: " + productDTO.getQuantity());
 
         cartItemRepository.save(cartItem);
-        List<CartItem> cartItemList = cart.getCartItems();
-        cartItemList.add(cartItem);
-        cart.setCartItems(cartItemList);
+//        List<CartItem> cartItemList = cart.getCartItems();
+//        cartItemList.add(cartItem);
+//        cart.setCartItems(cartItemList);
         cart.setTotalPrice(cartTotalPrice + (productDTO.getPrice() * (1 - productDTO.getDiscount()/100)) * quantity);
 
         return modelMapper.map(cartRepository.save(cart), CartDTO.class);
+    }
+
+    @Override
+    public CartDTO createCart(CartDTO cartDTO) {
+        CartDTO createdCartDTO = new CartDTO();
+        for (CartItem cartItem: cartDTO.getCartItems()) {
+            Long productId = cartItem.getProduct().getProductId();
+            int quantity = cartItem.getQuantity();
+
+            createdCartDTO = addProductToCart(productId, quantity);
+        }
+        return createdCartDTO;
     }
 
     private Cart getUserCart() {
