@@ -58,6 +58,7 @@ public class CartServiceImpl implements CartService {
         3. Check if user already have a cart, if not creates it
         4. Add product to cart if not already, otherwise updates quantity, price and discount
      */
+    @Transactional
     @Override
     public CartDTO addProductToCart(Long productId, @NotNull @PositiveOrZero  Integer quantity) {
         Product product = productRepository.findById(productId)
@@ -106,8 +107,10 @@ public class CartServiceImpl implements CartService {
         return modelMapper.map(cartRepository.save(cart), CartDTO.class);
     }
 
+    @Transactional
     @Override
     public CartDTO createCart(CartDTO cartDTO) {
+        cleanCart();
         CartDTO createdCartDTO = new CartDTO();
         for (CartItem cartItem: cartDTO.getCartItems()) {
             Long productId = cartItem.getProduct().getProductId();
@@ -116,6 +119,13 @@ public class CartServiceImpl implements CartService {
             createdCartDTO = addProductToCart(productId, quantity);
         }
         return createdCartDTO;
+    }
+
+    private void cleanCart() {
+        Cart cart = cartRepository.findCartByEmail(authUtil.loggedInEmail());
+        if (cart != null) {
+            cartItemRepository.deleteByCartId(cart.getCartId());
+        }
     }
 
     private Cart getUserCart() {
