@@ -38,9 +38,11 @@ public class Order {
             CascadeType.PERSIST, CascadeType.MERGE
     }, mappedBy = "order")
     private List<OrderItem> orderItems = new ArrayList<>();
+
     @OneToOne
-    @JoinColumn(name = "payment_id")
+    @JoinColumn(name = "payment_id", nullable = true)
     private Payment payment;
+
     @ManyToOne
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;

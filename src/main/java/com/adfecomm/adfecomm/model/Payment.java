@@ -28,13 +28,27 @@ public class Payment {
 
     //Payment gateway information
     private String pgPaymentId;
-    private String pgStatus;
+    private OrderStatus pgStatus;
     private String pgResponseMessage;
-    private String pgName; //External service name (Stripe for example)
 
     public Payment(Long paymentId, Order order, String paymentMethod) {
         this.paymentId = paymentId;
         this.order = order;
         this.paymentMethod = paymentMethod;
+    }
+
+    public Payment(Order order, String paymentMethod, String pgPaymentId, OrderStatus pgStatus, String pgResponseMessage) {
+        this.order = order;
+        this.paymentMethod = paymentMethod;
+        this.pgPaymentId = pgPaymentId;
+        this.pgStatus = pgStatus;
+        this.pgResponseMessage = pgResponseMessage;
+    }
+
+    public Payment(String paymentMethod, String pgPaymentId, OrderStatus pgStatus, String pgResponseMessage) {
+        this.paymentMethod = paymentMethod;
+        this.pgPaymentId = pgPaymentId;
+        this.pgStatus = pgStatus;
+        this.pgResponseMessage = pgResponseMessage;
     }
 }

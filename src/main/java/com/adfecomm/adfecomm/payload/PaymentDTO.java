@@ -1,5 +1,6 @@
 package com.adfecomm.adfecomm.payload;
 
+import com.adfecomm.adfecomm.model.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,13 @@ public class PaymentDTO {
     private String paymentMethod;
     //Payment gateway information
     private String pgPaymentId;
-    private String pgStatus;
+    private OrderStatus pgStatus;
     private String pgResponseMessage;
-    private String pgName;
+
+    public PaymentDTO(String paymentMethod, String pgPaymentId, OrderStatus pgStatus, String pgResponseMessage) {
+        this.paymentMethod = paymentMethod;
+        this.pgPaymentId = pgPaymentId;
+        this.pgStatus = pgStatus;
+        this.pgResponseMessage = pgResponseMessage;
+    }
 }

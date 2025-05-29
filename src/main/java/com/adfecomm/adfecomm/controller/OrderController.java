@@ -1,8 +1,6 @@
 package com.adfecomm.adfecomm.controller;
 
-import com.adfecomm.adfecomm.payload.APIResponse;
-import com.adfecomm.adfecomm.payload.OrderDTO;
-import com.adfecomm.adfecomm.payload.StripePaymentDTO;
+import com.adfecomm.adfecomm.payload.*;
 import com.adfecomm.adfecomm.service.OrderService;
 import com.adfecomm.adfecomm.service.StripeService;
 import com.stripe.exception.StripeException;
@@ -21,10 +19,10 @@ public class OrderController {
     @Autowired
     StripeService stripeService;
 
-    @PostMapping("/users/orders/payments/{paymentMethod}")
-    public ResponseEntity<?> createOrder(@PathVariable String paymentMethod, @RequestBody OrderDTO orderDTO) {
-        Long addressId = orderDTO.getAddressId();
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.placeOrder(paymentMethod, addressId));
+    @PostMapping("/users/orders/{paymentMethod}")
+    public ResponseEntity<?> createOrder(@PathVariable String paymentMethod, @RequestBody OrderRequest orderRequest) {
+        Long addressId = orderRequest.getAddressId();
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.placeOrder(paymentMethod, orderRequest));
     }
 
     @PostMapping("/users/order/payments/stripe")
@@ -32,11 +30,17 @@ public class OrderController {
         try {
             PaymentIntent paymentIntent = stripeService.createPaymentIntent(stripePaymentDTO);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new APIResponse(paymentIntent.getClientSecret(), true));
+                    .body(new StripeIntentResponse(paymentIntent.getClientSecret(), paymentIntent.getId(), true));
         } catch (StripeException ex) {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new APIResponse("failed to create payment intention: " + ex.getMessage(), false));
         }
+    }
+
+    @PostMapping("/users/order/payments/confirm/{pgPaymentId}/{pgResponseMessage}")
+    public ResponseEntity<?> confirmOrderPayment(@PathVariable String pgPaymentId,@PathVariable String pgResponseMessage) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body(orderService.confirmOrderPayment(pgPaymentId, pgResponseMessage));
     }
 
 }

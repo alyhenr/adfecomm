@@ -4,7 +4,7 @@ import com.adfecomm.adfecomm.exceptions.APIException;
 import com.adfecomm.adfecomm.exceptions.ResourceNotFoundException;
 import com.adfecomm.adfecomm.model.*;
 import com.adfecomm.adfecomm.payload.OrderDTO;
-import com.adfecomm.adfecomm.payload.OrderItemDTO;
+import com.adfecomm.adfecomm.payload.OrderRequest;
 import com.adfecomm.adfecomm.payload.PaymentDTO;
 import com.adfecomm.adfecomm.repository.*;
 import com.adfecomm.adfecomm.util.AuthUtil;
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -43,6 +42,9 @@ public class OrderServiceImpl implements OrderService {
     PaymentService paymentService;
 
     @Autowired
+    PaymentRepository paymentRepository;
+
+    @Autowired
     CartService cartService;
 
     @Autowired
@@ -53,7 +55,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Transactional
     @Override
-    public OrderDTO placeOrder(String paymentMethod, Long addressId) {
+    public OrderDTO placeOrder(String paymentMethod, OrderRequest orderRequest) {
+        Long addressId = orderRequest.getAddressId();
         User user = authUtil.loggedInUser();
         Cart cart  = cartRepository.findCartByEmail(user.getEmail());
 
@@ -66,7 +69,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setEmail(user.getEmail());
         order.setTotalPrice(cart.getTotalPrice());
-        order.setOrderStatus(OrderStatus.WAITING_PAYMENT);
+        order.setOrderStatus(orderRequest.getPgStatus());
         order.setOrderDate(LocalDate.now());
         order.setAddress(address);
 
@@ -95,17 +98,42 @@ public class OrderServiceImpl implements OrderService {
             orderItems.add(orderItem);
         }
 
+        PaymentDTO paymentDTO = new PaymentDTO(
+                paymentMethod,
+                orderRequest.getPgPaymentId(),
+                orderRequest.getPgStatus(),
+                orderRequest.getPgResponseMessage());
+
         Order newOrder = orderRepository.save(order);
+        Payment payment = paymentService.createPayment(paymentMethod, order, paymentDTO);
+
+        newOrder.setPayment(payment);
+        payment.setOrder(newOrder);
+
         List<OrderItem> orderItemList = orderItemRepository.saveAll(orderItems);
         newOrder.setOrderItems(orderItemList);
         orderRepository.save(newOrder);
-
-        //TODO
-//        PaymentDTO paymentDTO = paymentService.managePayment(paymentMethod, newOrder.getOrderId());
-//        order.setPayment(modelMapper.map(paymentDTO, Payment.class));
+        paymentRepository.save(payment);
 
         cartService.clearUserCart();
 
         return modelMapper.map(newOrder, OrderDTO.class);
+    }
+
+    @Override
+    public OrderDTO confirmOrderPayment(String pgPaymentId, String pgResponseMessage) {
+        Order order = orderRepository.findByPaymentPGPaymentId(pgPaymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        Payment payment = paymentRepository.findById(order.getPayment().getPaymentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not registered"));
+
+        payment.setPgStatus(OrderStatus.PAYED);
+        payment.setPgResponseMessage(pgResponseMessage);
+        order.setOrderStatus(OrderStatus.PAYED);
+
+        paymentRepository.save(payment);
+        orderRepository.save(order);
+
+        return modelMapper.map(order, OrderDTO.class);
     }
 }
