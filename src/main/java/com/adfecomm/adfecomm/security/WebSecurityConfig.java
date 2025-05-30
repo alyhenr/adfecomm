@@ -9,6 +9,7 @@ import com.adfecomm.adfecomm.security.jwt.AuthEntryPointJwt;
 import com.adfecomm.adfecomm.security.jwt.AuthTokenFilter;
 import com.adfecomm.adfecomm.security.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,18 +26,24 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
-//@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
     @Autowired
     UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
+
+    @Value("${spring.security.admin.email}")
+    private String adminEmail;
+    @Value("${spring.security.admin.password}")
+    private String adminPassword;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -74,9 +81,9 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
-//                                .requestMatchers("/api/admin/**").permitAll()
+                                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/public/**").permitAll()
-                                .requestMatchers("/api/users/**").permitAll() //remove it
+                                .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "USER")
                                 .requestMatchers("/swagger-ui/**").permitAll()
                                 .requestMatchers("/api/test/**").permitAll()
                                 .requestMatchers("/images/**").permitAll()
@@ -127,8 +134,8 @@ public class WebSecurityConfig {
                 userRepository.save(user1);
             }
 
-            if (!userRepository.existsByEmail("admin@example.com")) {
-                    User admin = new User("admin@example.com", "admin", passwordEncoder.encode("adminPass"));
+            if (!userRepository.existsByEmail(adminEmail)) {
+                    User admin = new User(adminEmail, "admin", passwordEncoder.encode(adminPassword));
                 userRepository.save(admin);
             }
 
@@ -138,7 +145,7 @@ public class WebSecurityConfig {
                 userRepository.save(user);
             });
 
-            userRepository.findByEmail("admin@example.com").ifPresent(admin -> {
+            userRepository.findByEmail(adminEmail).ifPresent(admin -> {
                 admin.setRoles(adminRoles);
                 userRepository.save(admin);
             });

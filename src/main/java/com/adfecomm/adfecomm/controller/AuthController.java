@@ -6,6 +6,7 @@ import com.adfecomm.adfecomm.model.AppRole;
 import com.adfecomm.adfecomm.model.Role;
 import com.adfecomm.adfecomm.model.User;
 import com.adfecomm.adfecomm.payload.APIResponse;
+import com.adfecomm.adfecomm.payload.GoogleAuthRequest;
 import com.adfecomm.adfecomm.repository.RoleRepository;
 import com.adfecomm.adfecomm.repository.UserRepository;
 import com.adfecomm.adfecomm.security.dto.SignUpRequest;
@@ -13,6 +14,12 @@ import com.adfecomm.adfecomm.security.jwt.JwtUtils;
 import com.adfecomm.adfecomm.security.dto.LoginRequest;
 import com.adfecomm.adfecomm.security.dto.LoginResponse;
 import com.adfecomm.adfecomm.security.service.UserDetailsImpl;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.gson.GsonFactory;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -140,4 +147,58 @@ public class AuthController {
 
     }
 
+    //Google Auth
+//    private GoogleIdToken.Payload verifyGoogleToken(String token) {
+//        try {
+//            HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+//            JsonFactory jsonFactory = GsonFactory.getDefaultInstance();
+//
+//            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+//                    // Replace with your Google Client ID
+//                    .setAudience(Collections.singletonList("YOUR_GOOGLE_CLIENT_ID"))
+//                    .build();
+//
+//            GoogleIdToken idToken = verifier.verify(token);
+//            if (idToken != null) {
+//                return idToken.getPayload();
+//            }
+//        } catch (Exception e) {
+//            System.out.println("Failed to verify Google token" + e);
+//        }
+//        return null;
+//    }
+//
+//
+//    @PostMapping("/auth/google")
+//    public ResponseEntity<?> authenticateWithGoogle(@RequestBody GoogleAuthRequest request) {
+//        // 1. Verify the token with Google
+//        GoogleIdToken.Payload payload = verifyGoogleToken(request.getCredential());
+//
+//        if (payload == null) {
+//            return ResponseEntity.badRequest().body("Invalid Google token");
+//        }
+//
+//        // 2. Extract user information from payload
+//        String email = payload.getEmail();
+//        String name = (String) payload.get("name");
+//        String pictureUrl = (String) payload.get("picture");
+//        String locale = (String) payload.get("locale");
+//
+//        // 3. Check if user exists in your database
+//        User user = userRepository.findByEmail(email).orElse(null);
+//
+//        if (user == null) {
+//            user = new User();
+//            user.setEmail(email);
+//            user.setUsername(name);
+//
+//            userRepository.save(user);
+//        } else {
+//            user.setUsername(name);
+//            userRepository.save(user);
+//        }
+//
+//        // 5. Generate JWT token or session for your app
+//        return authenticateUser(email, )
+//    }
 }
