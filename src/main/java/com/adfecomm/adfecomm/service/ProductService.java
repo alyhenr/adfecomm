@@ -19,4 +19,5 @@ public interface ProductService {
     @Transactional
     ProductDTO deleteProduct(Long productId);
     void updateProductQuantity(Long productId, Integer quantity);
+    ProductDTO getProductById(Long productId);
 }

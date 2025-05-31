@@ -82,6 +82,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductDTO getProductById(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(productId, "Product", "id"));
+        return modelMapper.map(product, ProductDTO.class);
+    }
+
+    @Override
     public ListResponse getProductsByKeyword(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Pageable productsPageable = ListResponseBuilder.create()
                 .PageNumber(pageNumber)

@@ -32,6 +32,13 @@ public class ProductController {
         return ResponseEntity.status(HttpStatus.OK).body(productService.getAllProducts(pageNumber, pageSize, sortBy, sortOrder, category, keyword));
     }
 
+    @GetMapping("/public/products/{productId}")
+    public ResponseEntity<ProductDTO> getProductById(
+            @PathVariable Long productId
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(productService.getProductById(productId));
+    }
+
     @GetMapping("/public/categories/{categoryId}/products")
     public ResponseEntity<ListResponse> getAllProducts(
             @PathVariable Long categoryId,
