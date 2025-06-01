@@ -60,7 +60,7 @@ public class JwtUtils {
         String jwt = generateTokenFromEmail(userPrincipal);
 
         return ResponseCookie.from(jwtCookie, jwt)
-                .httpOnly(false)
+                .httpOnly(true)
                 .secure(secure)
                 .path("/api")
                 .sameSite("None")
