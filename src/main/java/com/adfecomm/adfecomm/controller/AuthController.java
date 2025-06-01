@@ -7,12 +7,14 @@ import com.adfecomm.adfecomm.model.Role;
 import com.adfecomm.adfecomm.model.User;
 import com.adfecomm.adfecomm.payload.APIResponse;
 import com.adfecomm.adfecomm.payload.GoogleAuthRequest;
+import com.adfecomm.adfecomm.payload.AuthResponseDTO;
 import com.adfecomm.adfecomm.repository.RoleRepository;
 import com.adfecomm.adfecomm.repository.UserRepository;
 import com.adfecomm.adfecomm.security.dto.SignUpRequest;
 import com.adfecomm.adfecomm.security.jwt.JwtUtils;
 import com.adfecomm.adfecomm.security.dto.LoginRequest;
 import com.adfecomm.adfecomm.security.dto.LoginResponse;
+import com.adfecomm.adfecomm.security.dto.UserDTO;
 import com.adfecomm.adfecomm.security.service.UserDetailsImpl;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -66,11 +68,15 @@ public class AuthController {
         String jwtToken = jwtUtils.generateTokenFromUsername(userDetails);
 
 //        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), jwtToken, getUserRoles(userDetails));
-        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), getUserRoles(userDetails));
+        return new LoginResponse(new UserDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), getUserRoles(userDetails)), jwtUtils.getJwtExpirationMs());
     }
 
     private LoginResponse generateLoginResponseJwtCookies(UserDetailsImpl userDetails) {
-        return new LoginResponse(userDetails.getId(), userDetails.getUsername(), getUserRoles(userDetails));
+        return new LoginResponse(new UserDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), getUserRoles(userDetails)), jwtUtils.getJwtExpirationMs());
+    }
+
+    private AuthResponseDTO generateAuthResponseDTO(UserDTO userDTO, UserDetailsImpl userDetails) {
+        return new AuthResponseDTO(jwtUtils.getJwtExpirationMs(), userDTO);
     }
 
     @PostMapping("/sign-in")
@@ -94,10 +100,11 @@ public class AuthController {
         switch (AppConstants.AUTH_TYPE) {
             case "COOKIES":
                 ResponseCookie jwtTokenCookie = jwtUtils.generateJwtCookie(userDetails); //From email currently
-                LoginResponse response = generateLoginResponseJwtCookies(userDetails);
+                UserDTO userDTO = new UserDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(),getUserRoles(userDetails));
+                AuthResponseDTO authResponseDTO = generateAuthResponseDTO(userDTO, userDetails);
                 return ResponseEntity.ok()
                         .header(HttpHeaders.SET_COOKIE, jwtTokenCookie.toString())
-                        .body(response);
+                        .body(authResponseDTO);
         }
 
         return ResponseEntity.internalServerError().body("Failed to authenticate, please try again later");
@@ -129,9 +136,7 @@ public class AuthController {
         if (authentication != null) {
             UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
             return ResponseEntity.ok(
-                    new LoginResponse(userDetails.getId()
-                            , userDetails.getUsername()
-                            , getUserRoles(userDetails)));
+                    new LoginResponse(new UserDTO(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), getUserRoles(userDetails)), jwtUtils.getJwtExpirationMs()));
         }
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
