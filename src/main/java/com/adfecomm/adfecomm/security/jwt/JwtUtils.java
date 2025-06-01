@@ -18,6 +18,7 @@ import org.springframework.web.util.WebUtils;
 
 import javax.crypto.SecretKey;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Date;
 
 @Component
@@ -59,10 +60,11 @@ public class JwtUtils {
         String jwt = generateTokenFromEmail(userPrincipal);
 
         return ResponseCookie.from(jwtCookie, jwt)
-                .path("/api")
-                .maxAge(24*60*60*60)
                 .httpOnly(false)
                 .secure(secure)
+                .path("/api")
+                .sameSite("None")
+                .maxAge(Duration.ofDays(1))
                 .build();
     }
 
