@@ -64,7 +64,7 @@ public class JwtUtils {
         ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from(jwtCookie, jwt)
                 .httpOnly(true)
                 .secure(secure)
-                .path("/")  // Changed from /api to / to work for all paths
+                .path("/api")
                 .maxAge(Duration.ofDays(1));
 
         // Set SameSite attribute based on secure flag
