@@ -38,6 +38,9 @@ public class JwtUtils {
     @Value("${spring.app.jwtCookieSecure}")
     private boolean secure;
 
+    @Value("${spring.app.jwtCookieDomain:#{null}}")
+    private String cookieDomain;
+
     public String getJwtFromHeader(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         logger.debug("Authorization Header: {}", bearerToken);
@@ -47,31 +50,50 @@ public class JwtUtils {
         return null;
     }
 
-    public String getJwtFromCookies (HttpServletRequest request) {
+    public String getJwtFromCookies(HttpServletRequest request) {
         Cookie cookie = WebUtils.getCookie(request, jwtCookie);
-
         if (cookie != null) {
             return cookie.getValue();
         }
         return null;
     }
 
-    public ResponseCookie generateJwtCookie (UserDetailsImpl userPrincipal) {
+    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
         String jwt = generateTokenFromEmail(userPrincipal);
-
-        return ResponseCookie.from(jwtCookie, jwt)
+        
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from(jwtCookie, jwt)
                 .httpOnly(true)
                 .secure(secure)
-                .path("/api")
-                .sameSite("None")
-                .maxAge(Duration.ofDays(1))
-                .build();
+                .path("/")  // Changed from /api to / to work for all paths
+                .maxAge(Duration.ofDays(1));
+
+        // Set SameSite attribute based on secure flag
+        if (secure) {
+            cookieBuilder.sameSite("None");
+        } else {
+            cookieBuilder.sameSite("Lax");
+        }
+
+        // Add domain if specified
+        if (cookieDomain != null && !cookieDomain.isEmpty()) {
+            cookieBuilder.domain(cookieDomain);
+        }
+
+        return cookieBuilder.build();
     }
 
-    public ResponseCookie generateCleanCookie () {
-        return ResponseCookie.from(jwtCookie, null)
-                .path("/api")
-                .build();
+    public ResponseCookie generateCleanCookie() {
+        ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from(jwtCookie, "")
+                .httpOnly(true)
+                .secure(secure)
+                .path("/")
+                .maxAge(0);
+
+        if (cookieDomain != null && !cookieDomain.isEmpty()) {
+            cookieBuilder.domain(cookieDomain);
+        }
+
+        return cookieBuilder.build();
     }
 
     public String generateTokenFromEmail(UserDetailsImpl userDetails) {
