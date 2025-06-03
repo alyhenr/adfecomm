@@ -60,7 +60,7 @@ public class OrderServiceImpl implements OrderService {
         User user = authUtil.loggedInUser();
         Cart cart  = cartRepository.findCartByEmail(user.getEmail());
 
-        if (Objects.isNull(cart)) throw new ResourceNotFoundException("User cart is empty");
+        if (Objects.isNull(cart)) throw new ResourceNotFoundException("Cart");
 
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundException(addressId, "Address", "addressId"));
@@ -68,7 +68,8 @@ public class OrderServiceImpl implements OrderService {
         //Create Order
         Order order = new Order();
         order.setEmail(user.getEmail());
-        order.setTotalPrice(cart.getTotalPrice());
+        order.setTotalPrice(cart.getTotalPrice() + orderRequest.getTax());
+        order.setTax(orderRequest.getTax());
         order.setOrderStatus(orderRequest.getPgStatus());
         order.setOrderDate(LocalDate.now());
         order.setAddress(address);
@@ -89,8 +90,8 @@ public class OrderServiceImpl implements OrderService {
                         + product.getQuantity() + ")");
 
             orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setOrderedProductPrice(cartItem.getProduct().getPrice());
-            orderItem.setDiscount(cartItem.getProduct().getDiscount());
+            orderItem.setOrderedProductPrice(cartItem.getPrice());
+            orderItem.setDiscount(cartItem.getDiscount());
             orderItem.setProduct(cartItem.getProduct());
             orderItem.setOrder(order);
 
@@ -115,8 +116,6 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(newOrder);
         paymentRepository.save(payment);
 
-        cartService.clearUserCart();
-
         return modelMapper.map(newOrder, OrderDTO.class);
     }
 
@@ -133,6 +132,8 @@ public class OrderServiceImpl implements OrderService {
 
         paymentRepository.save(payment);
         orderRepository.save(order);
+
+        cartService.clearUserCart();
 
         return modelMapper.map(order, OrderDTO.class);
     }

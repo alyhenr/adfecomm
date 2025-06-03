@@ -5,9 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class APIResponse {
-    public String message;
-    private boolean status;
+    private String message;
+    private boolean success;
 }

@@ -27,6 +27,7 @@ public class Order {
     private String email;
 
     private Double totalPrice;
+    private Double tax;
     private LocalDate orderDate;
 
     @ToString.Exclude

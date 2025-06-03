@@ -4,7 +4,6 @@ import com.adfecomm.adfecomm.model.Address;
 import com.adfecomm.adfecomm.model.User;
 import com.adfecomm.adfecomm.payload.AddressDTO;
 import com.adfecomm.adfecomm.payload.ListResponse;
-import jakarta.validation.Valid;
 
 import java.util.List;
 

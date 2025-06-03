@@ -69,9 +69,7 @@ public class CartServiceImpl implements CartService {
         Cart cart = getUserCart();
         CartItem cartItem = cartItemRepository.findByCartIdAndProductId(cart.getCartId(), productId);
 
-        Double cartTotalPrice;
         if (Objects.isNull(cartItem)) {
-            cartTotalPrice = cart.getTotalPrice();
             if (quantity > 0) {
                 cartItem = new CartItem(cart, product, quantity, product.getDiscount(), product.getPrice());
                 List<CartItem> cartItemList = cart.getCartItems();
@@ -79,8 +77,6 @@ public class CartServiceImpl implements CartService {
                 cart.setCartItems(cartItemList);
             } else return null;
         } else {
-            cartTotalPrice = cart.getTotalPrice()
-                    - cartItem.getPrice() * (1 - cartItem.getDiscount()/100) * Math.max(cartItem.getQuantity(), 0);
             if (quantity <= 0) {
                 cartItemRepository.delete(cartItem);
                 //Check if cart is empty, if so, delete it
@@ -99,10 +95,8 @@ public class CartServiceImpl implements CartService {
             throw new APIException("Asked quantity exceeds current product quantity available. Asked: " + cartItem.getQuantity() + ", Available: " + productDTO.getQuantity());
 
         cartItemRepository.save(cartItem);
-//        List<CartItem> cartItemList = cart.getCartItems();
-//        cartItemList.add(cartItem);
-//        cart.setCartItems(cartItemList);
-        cart.setTotalPrice(cartTotalPrice + (productDTO.getPrice() * (1 - productDTO.getDiscount()/100)) * quantity);
+        cartRepository.save(cart);
+        cart.setTotalPrice(calcCartTotalPrice(cart));
 
         return modelMapper.map(cartRepository.save(cart), CartDTO.class);
     }
@@ -188,6 +182,9 @@ public class CartServiceImpl implements CartService {
     public void clearUserCart() {
         User user = authUtil.loggedInUser();
         Cart cart = cartRepository.findCartByEmail(user.getEmail());
+
+        if (Objects.isNull(cart)) return;
+
         for (CartItem cartItem: cart.getCartItems()) {
             cartItemRepository.delete(cartItem);
         }

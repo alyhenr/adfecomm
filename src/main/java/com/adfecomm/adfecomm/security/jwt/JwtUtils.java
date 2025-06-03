@@ -60,7 +60,14 @@ public class JwtUtils {
 
     public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
         String jwt = generateTokenFromEmail(userPrincipal);
-        
+        return generateCookie(jwt);
+    }
+
+    public ResponseCookie generateJwtCookie(String jwt) {
+        return generateCookie(jwt);
+    }
+
+    private ResponseCookie generateCookie(String jwt) {
         ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie.from(jwtCookie, jwt)
                 .httpOnly(true)
                 .secure(secure)
@@ -98,18 +105,21 @@ public class JwtUtils {
 
     public String generateTokenFromEmail(UserDetailsImpl userDetails) {
         String username = userDetails.getEmail();
-        return Jwts.builder()
-                .subject(username)
-                .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
-                .signWith(key())
-                .compact();
+        return generateToken(username);
+    }
+
+    public String generateTokenFromEmail(String email) {
+        return generateToken(email);
     }
 
     public String generateTokenFromUsername(UserDetails userDetails) {
         String username = userDetails.getUsername();
+        return generateToken(username);
+    }
+
+    private String generateToken(String subject) {
         return Jwts.builder()
-                .subject(username)
+                .subject(subject)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key())

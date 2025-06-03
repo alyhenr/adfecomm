@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class OrderRequest {
     private Long addressId;
+    private Double tax;
     private String pgPaymentId;
     private OrderStatus pgStatus;
     private String pgResponseMessage;

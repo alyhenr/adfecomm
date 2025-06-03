@@ -8,7 +8,6 @@ import com.adfecomm.adfecomm.repository.UserRepository;
 import com.adfecomm.adfecomm.security.jwt.AuthEntryPointJwt;
 import com.adfecomm.adfecomm.security.jwt.AuthTokenFilter;
 import com.adfecomm.adfecomm.security.service.UserDetailsServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -40,19 +39,24 @@ import java.util.Set;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
-    @Autowired
-    UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final AuthEntryPointJwt unauthorizedHandler;
+    private final String adminEmail;
+    private final String adminPassword;
+    private final String frontendUrl;
 
-    @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
-
-    @Value("${spring.security.admin.email}")
-    private String adminEmail;
-    @Value("${spring.security.admin.password}")
-    private String adminPassword;
-
-    @Value("${frontend.url}")
-    private String frontendUrl;
+    public WebSecurityConfig(
+            UserDetailsServiceImpl userDetailsService,
+            AuthEntryPointJwt unauthorizedHandler,
+            @Value("${spring.security.admin.email}") String adminEmail,
+            @Value("${spring.security.admin.password}") String adminPassword,
+            @Value("${frontend.url}") String frontendUrl) {
+        this.userDetailsService = userDetailsService;
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.adminEmail = adminEmail;
+        this.adminPassword = adminPassword;
+        this.frontendUrl = frontendUrl;
+    }
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -86,15 +90,18 @@ public class WebSecurityConfig {
         configuration.setAllowedOrigins(Collections.singletonList(frontendUrl));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
-        configuration.setExposedHeaders(List.of("x-auth-token"));
-        configuration.setAllowCredentials(true); // Allow credentials
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            UserRepository userRepository,
+            RoleRepository roleRepository) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
@@ -102,7 +109,7 @@ public class WebSecurityConfig {
                         SessionCreationPolicy.STATELESS
                 ))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/auth/**").permitAll()
+                        auth.requestMatchers("/api/auth/**", "/oauth2/**").permitAll()
                                 .requestMatchers("/v3/api-docs/**").permitAll()
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/public/**").permitAll()
