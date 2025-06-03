@@ -2,7 +2,7 @@ package com.adfecomm.adfecomm.security.auth;
 
 import com.adfecomm.adfecomm.security.dto.LoginRequest;
 import com.adfecomm.adfecomm.security.dto.LoginResponse;
-import com.adfecomm.adfecomm.security.dto.UserDTO;
+import com.adfecomm.adfecomm.payload.UserDTO;
 import com.adfecomm.adfecomm.security.jwt.JwtUtils;
 import com.adfecomm.adfecomm.security.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Value;

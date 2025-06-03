@@ -1,4 +1,4 @@
-package com.adfecomm.adfecomm.security.dto;
+package com.adfecomm.adfecomm.payload;
 
 import java.util.List;
 

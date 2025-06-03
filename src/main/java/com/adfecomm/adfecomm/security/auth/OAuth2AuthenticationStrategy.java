@@ -2,7 +2,7 @@ package com.adfecomm.adfecomm.security.auth;
 
 import com.adfecomm.adfecomm.security.dto.LoginRequest;
 import com.adfecomm.adfecomm.security.dto.LoginResponse;
-import com.adfecomm.adfecomm.security.dto.UserDTO;
+import com.adfecomm.adfecomm.payload.UserDTO;
 import com.adfecomm.adfecomm.security.jwt.JwtUtils;
 import com.adfecomm.adfecomm.security.service.UserDetailsImpl;
 import org.springframework.http.HttpHeaders;
@@ -10,9 +10,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

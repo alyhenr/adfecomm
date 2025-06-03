@@ -13,7 +13,7 @@ import com.adfecomm.adfecomm.security.dto.SignUpRequest;
 import com.adfecomm.adfecomm.security.jwt.JwtUtils;
 import com.adfecomm.adfecomm.security.dto.LoginRequest;
 import com.adfecomm.adfecomm.security.dto.LoginResponse;
-import com.adfecomm.adfecomm.security.dto.UserDTO;
+import com.adfecomm.adfecomm.payload.UserDTO;
 import com.adfecomm.adfecomm.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
