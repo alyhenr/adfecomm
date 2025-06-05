@@ -32,6 +32,7 @@ public class Product {
     @PositiveOrZero
     private Integer quantity;
 
+    @Column(length = 1000)
     private String imageUrl;
 
     @PositiveOrZero
